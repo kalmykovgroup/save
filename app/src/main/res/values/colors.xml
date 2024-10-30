@@ -20,11 +20,15 @@
     <color name="plus_large_color_container">#680A0A</color>
 
      <!--list source-->
-    <color name="border_source_item_focused">#C8C8C8</color>
-    <color name="border_source_item_unfocused">#C8C8C8</color>
+    <color name="list_source_background">#89FFFFFF</color>
+    <color name="border_source_item_focused">#1F1F1F</color>
+    <color name="border_source_item_unfocused">#1F1F1F</color>
     <color name="eye_background">#7AB0C5AB</color>
     <color name="show_background">#7AF8EB99</color>
     <color name="delete_background">#7AB88080</color>
-    <color name="icon_copy">#7A9D9D9D</color>
-    <color name="icon_eye">#7A9D9D9D</color>
+    <color name="icon_copy">#1F1F1F</color>
+    <color name="icon_eye">#1F1F1F</color>
+    <color name="key_value_text_color">#1F1F1F</color>
+    <color name="password_divider">#1F1F1F</color>
+    <color name="background_active_source">#9C4E8EA8</color>
 </resources>

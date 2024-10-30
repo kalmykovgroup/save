@@ -9,8 +9,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModel
+import group.kalmykov.safe.R
 import group.kalmykov.safe.ui.components.homeScreen.bottomBar.BottomBarComponent
 import group.kalmykov.safe.ui.components.homeScreen.search.SearchComponent
 import group.kalmykov.safe.ui.components.homeScreen.sourceList.ListSourcesComponent
@@ -30,7 +34,10 @@ class HomeScreen(private val homeViewModel: HomeViewModel): ViewModel(){
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White), contentAlignment = Alignment.TopStart
+                    .paint(
+                        painterResource(R.drawable.back),
+                        contentScale = ContentScale.Crop
+                    ), contentAlignment = Alignment.TopStart
             ) {
 
                 Column {
