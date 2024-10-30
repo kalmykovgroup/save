@@ -1,4 +1,7 @@
 package group.kalmykov.safe.models
 
-class PasswordModel {
-}
+data class Password(
+    var key: String? = "unknown",
+    var value: String = null.toString(),
+    var description: String? = null,
+)

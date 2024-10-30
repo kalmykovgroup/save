@@ -47,7 +47,7 @@ dependencies {
 
     val nav_version = "2.8.3"
 
-    // Jetpack Compose integration
+    // Jetpack Compose integratio
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
     // Интеграция / Просмотров/фрагментов
@@ -64,6 +64,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.3") //Навигация
 
     implementation("androidx.compose.material:material:1.7.2")//Нижняя навигация
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

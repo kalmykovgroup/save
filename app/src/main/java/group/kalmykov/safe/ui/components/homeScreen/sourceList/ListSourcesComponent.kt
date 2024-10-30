@@ -2,25 +2,22 @@ package group.kalmykov.safe.ui.components.homeScreen.sourceList
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -41,7 +38,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +47,7 @@ import group.kalmykov.safe.R
 import group.kalmykov.safe.models.Source
 
 
-class SourceListComponent(): ViewModel(){
+class ListSourcesComponent(): ViewModel(){
 
     var sources: MutableList<Source> = mutableStateListOf(
         Source("Source_1"),
@@ -70,22 +66,32 @@ class SourceListComponent(): ViewModel(){
 
     @Composable
     fun SourceRow(source: Source){
-        Row(modifier = Modifier.fillMaxWidth().height(40.dp)){
-            Box{
-                Box{
-                    BasicTextFieldBlock(source)
+        val isOpenSource = remember { mutableStateOf(false) }
+
+        Row(modifier = Modifier.fillMaxWidth()){
+            Column{
+                Box(modifier = Modifier.fillMaxWidth().height(40.dp)){
+                    Box{
+                        BasicTextFieldBlock(source, isOpenSource)
+                    }
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(5.dp, 5.dp, 20.dp, 5.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(color = Color.Transparent)
+                        .clickable(onClick = { isOpenSource.value = !isOpenSource.value}),
+                        contentAlignment = Alignment.CenterEnd){
+                        Image(
+                            imageVector = ImageVector.vectorResource(if (isOpenSource.value) R.drawable.arrow_bottom else R.drawable.arrow_top),
+                            contentDescription = "?",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.width(23.dp),
+                            colorFilter = ColorFilter.tint(colorResource(R.color.black))
+                        )
+                    }
                 }
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(5.dp)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(color = Color.Transparent),
-                    contentAlignment = Alignment.CenterEnd){
-                     Row(horizontalArrangement = Arrangement.End){
-                         PasswordList(source.passwords)
-                     }
-                }
+                ListPasswords(source.passwords, isOpenSource)
             }
        }
     }
@@ -93,7 +99,7 @@ class SourceListComponent(): ViewModel(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BasicTextFieldBlock(source: Source){
+fun BasicTextFieldBlock(source: Source, isOpenSource: MutableState<Boolean>){
 
     val interactionSource = remember { MutableInteractionSource() }
 

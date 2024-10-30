@@ -7,5 +7,24 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!--Login screen-->
     <color name="passButton">#EEDBDBFF</color>
+    <color name="pass_green_success">#57936e</color>
+    <color name="pass_red_error">#d61f2c</color>
+    <color name="pass_default">#222E50</color>
+
+    <!--Home screen-->
+      <!--bottom button-->
+    <color name="plus_large_color_svg">#FFFFFF</color>
+    <color name="plus_large_color_container">#680A0A</color>
+
+     <!--list source-->
+    <color name="border_source_item_focused">#C8C8C8</color>
+    <color name="border_source_item_unfocused">#C8C8C8</color>
+    <color name="eye_background">#7AB0C5AB</color>
+    <color name="show_background">#7AF8EB99</color>
+    <color name="delete_background">#7AB88080</color>
+    <color name="icon_copy">#7A9D9D9D</color>
+    <color name="icon_eye">#7A9D9D9D</color>
 </resources>

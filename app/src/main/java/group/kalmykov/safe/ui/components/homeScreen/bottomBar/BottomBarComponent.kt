@@ -22,23 +22,32 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
+import group.kalmykov.safe.models.Source
 import group.kalmykov.safe.viewModels.HomeViewModel
 
-@Composable
-fun BottomBar(homeViewModel: HomeViewModel){
-    Row(modifier = Modifier.fillMaxWidth()
-        .border(width = 1.dp, color = Color.LightGray)
-        .padding(10.dp)
-        .height(50.dp),
-        horizontalArrangement = Arrangement.End){
-        Box(modifier = Modifier
-            .width(80.dp)
-            .fillMaxHeight()){
-                Button(onClick = {homeViewModel.AddPassword()},
-                        shape = RoundedCornerShape(5.dp),
-                        colors = ButtonDefaults.buttonColors( containerColor = colorResource(R.color.plus_large_color_container))
-                        ){
+
+class BottomBarComponent(private val homeViewModel: HomeViewModel) : ViewModel(){
+
+    private fun addPassword(){
+        homeViewModel.homeScreen.sourceListComponent.sources.add(Source())
+    }
+
+    @Composable
+    fun Show(){
+        Row(modifier = Modifier.fillMaxWidth()
+            .border(width = 1.dp, color = Color.LightGray)
+            .padding(10.dp)
+            .height(50.dp),
+            horizontalArrangement = Arrangement.End){
+            Box(modifier = Modifier
+                .width(80.dp)
+                .fillMaxHeight()){
+                Button(onClick = {addPassword()},
+                    shape = RoundedCornerShape(5.dp),
+                    colors = ButtonDefaults.buttonColors( containerColor = colorResource(R.color.plus_large_color_container))
+                ){
 
 
                     Image(
@@ -47,8 +56,10 @@ fun BottomBar(homeViewModel: HomeViewModel){
                         modifier = Modifier.size(20.dp, 20.dp),
                         colorFilter = ColorFilter.tint(colorResource(R.color.plus_large_color_svg))
                     )
+                }
             }
-        }
 
+        }
     }
 }
+
