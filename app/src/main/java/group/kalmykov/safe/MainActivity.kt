@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             SafeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val navController = rememberNavController()
-                    MainViewModel(navController = navController, padding = innerPadding, this).NavHostContainer()
+                    MainViewModel(navController = navController, padding = innerPadding).NavHostContainer()
                 }
             }
         }

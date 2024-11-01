@@ -21,11 +21,11 @@ import group.kalmykov.safe.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommonBasicTextField(value: String, setValue : (String) -> Unit, label: String, callBack: @Composable (MutableInteractionSource) -> Unit){
+fun CommonBasicTextField(value: String, setValue: (String) -> Unit, label: String? = null, callBack: @Composable() ((MutableInteractionSource) -> Unit)? = null){
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    callBack(interactionSource)
+    if(callBack != null) callBack(interactionSource)
 
     BasicTextField(
         value = value,
@@ -46,7 +46,7 @@ fun CommonBasicTextField(value: String, setValue : (String) -> Unit, label: Stri
             singleLine = true,
             interactionSource = interactionSource,
             visualTransformation = VisualTransformation.None,
-            label = { Text(softWrap = false,
+            label = { if(label != null) Text(softWrap = false,
                 overflow = TextOverflow.Ellipsis,
                 text = label, color = Color.Black) },
             container = {
@@ -55,8 +55,8 @@ fun CommonBasicTextField(value: String, setValue : (String) -> Unit, label: Stri
                     isError = false,
                     interactionSource = interactionSource,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorResource(R.color.border_source_item_focused),
-                        unfocusedBorderColor = colorResource(R.color.border_source_item_unfocused),
+                        focusedBorderColor = colorResource(R.color.border_common_text_field_focused),
+                        unfocusedBorderColor = colorResource(R.color.border_common_text_field_unfocused),
 
                         ),
                     shape = RoundedCornerShape(6.dp),

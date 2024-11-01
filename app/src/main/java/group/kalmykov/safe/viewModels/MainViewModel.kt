@@ -11,9 +11,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import group.kalmykov.safe.models.Routes
 
-class MainViewModel(private var navController: NavHostController, private var padding: PaddingValues, context: Context) : ViewModel(){
+class MainViewModel(private var navController: NavHostController, private var padding: PaddingValues) : ViewModel(){
 
-    private var LoginViewModel = LoginViewModel(navController, context);
+    private var LoginViewModel = LoginViewModel(navController);
     private var homeViewModel = HomeViewModel();
 
     @Composable

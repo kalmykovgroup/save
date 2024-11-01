@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -59,12 +60,14 @@ fun ButtonInputButtons(loginViewModel : LoginViewModel){
             }
 
         }
+
+        val context = LocalContext.current
         //Кнопка ноль
         Box(modifier = Modifier
             .height(80.dp)
             .weight(1f), contentAlignment = Alignment.Center){
             Button(
-                onClick = {loginViewModel.Enter(0) },
+                onClick = {loginViewModel.Enter(0, context)},
                 modifier = Modifier
                     .height(80.dp)
                     .fillMaxWidth(),

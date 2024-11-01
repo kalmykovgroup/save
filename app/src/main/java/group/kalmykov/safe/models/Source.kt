@@ -2,15 +2,12 @@ package group.kalmykov.safe.models
 
 import androidx.compose.runtime.mutableStateListOf
 
+
 data class Source(
-    val name : String = "unknown",
-    val passwords : MutableList<Password> = mutableStateListOf()
+    val  host: String,
+    val  password: String,
+    val  username : String? = null,
+    val  description: String? = null,
 ) {
 
-
-    init{
-        passwords.add(Password(key = "my.site1.com", value = "password 1 password 1 password 1 yiubbu uhu"))
-        passwords.add(Password(key = "my.site2.com", value = "password 2"))
-        passwords.add(Password(key = "my.site3.com", value = "password 3"))
-    }
 }

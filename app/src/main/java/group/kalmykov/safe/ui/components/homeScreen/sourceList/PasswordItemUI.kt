@@ -146,7 +146,7 @@ fun PassValueBasicTextFieldBlock(password: Password, passwordVisibility : Mutabl
                     password.value = password.value
                 }
             },
-    ) { innerTextField -> OutlinedTextFieldDefaults.DecorationBox(
+      ) { innerTextField -> OutlinedTextFieldDefaults.DecorationBox(
         value = password.value,
         innerTextField = innerTextField,
         enabled = true,
@@ -169,7 +169,7 @@ fun PassValueBasicTextFieldBlock(password: Password, passwordVisibility : Mutabl
                 unfocusedBorderThickness = 0.dp,
             )
         }
-    )
+      )
     }
 }
 
