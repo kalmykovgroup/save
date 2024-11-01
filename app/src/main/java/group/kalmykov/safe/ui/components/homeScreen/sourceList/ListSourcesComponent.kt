@@ -1,14 +1,10 @@
 package group.kalmykov.safe.ui.components.homeScreen.sourceList
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,12 +25,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
@@ -51,19 +44,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
 import group.kalmykov.safe.models.Password
-import group.kalmykov.safe.models.Source
+import group.kalmykov.safe.models.Source_
 import group.kalmykov.safe.ui.components.common.CommonBasicTextField
-import kotlinx.coroutines.launch
 
 class ListSourcesComponent: ViewModel(){
 
-    var sources: MutableList<Source> = mutableStateListOf(
-        Source("Source_1"),
-        Source("Source_2")
+    var sources: MutableList<Source_> = mutableStateListOf(
+        Source_("Source_1"),
+        Source_("Source_2")
     )
 
 
@@ -85,7 +76,7 @@ class ListSourcesComponent: ViewModel(){
 
 
     @Composable
-    fun SourceRow(source: Source){
+    fun SourceRow(source: Source_){
         var isOpenSource by remember { mutableStateOf(false) }
 
         var isOpenDialogAddPassword by remember { mutableStateOf(false) }
@@ -175,7 +166,7 @@ fun DialogEnterNameSource(cancel: () -> Unit, save: (String, String, String) -> 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BasicTextFieldBlockContainer(source: Source){
+fun BasicTextFieldBlockContainer(source: Source_){
 
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -210,8 +201,8 @@ fun BasicTextFieldBlockContainer(source: Source){
                     isError = false,
                     interactionSource = interactionSource,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorResource(R.color.border_source_item_focused),
-                        unfocusedBorderColor = colorResource(R.color.border_source_item_unfocused),
+                        focusedBorderColor = colorResource(R.color.border_common_text_field_focused),
+                        unfocusedBorderColor = colorResource(R.color.border_common_text_field_unfocused),
 
                         ),
                     shape = RoundedCornerShape(6.dp),

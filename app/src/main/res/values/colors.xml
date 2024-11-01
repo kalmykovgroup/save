@@ -15,14 +15,19 @@
     <color name="pass_default">#222E50</color>
 
     <!--Home screen-->
+    <color name="composable">#b6af53</color>
+    <color name="background_home_screen">#26292d</color>
+
       <!--bottom button-->
     <color name="plus_large_color_svg">#FFFFFF</color>
     <color name="plus_large_color_container">#680A0A</color>
 
      <!--list source-->
     <color name="list_source_background">#89FFFFFF</color>
-    <color name="border_source_item_focused">#1F1F1F</color>
-    <color name="border_source_item_unfocused">#1F1F1F</color>
+    <color name="border_field_input_focused">#1F1F1F</color>
+    <color name="border_field_input_unfocused">#1F1F1F</color>
+    <color name="border_common_text_field_focused">#1F1F1F</color>
+    <color name="border_common_text_field_unfocused">#1F1F1F</color>
     <color name="eye_background">#7AB0C5AB</color>
     <color name="show_background">#7AF8EB99</color>
     <color name="delete_background">#7AB88080</color>
@@ -31,4 +36,22 @@
     <color name="key_value_text_color">#1F1F1F</color>
     <color name="password_divider">#1F1F1F</color>
     <color name="background_active_source">#9C4E8EA8</color>
+
+
+    <color name="background_item_source">#18191d</color>
+    <color name="color_source_name">#2aaefe</color>
+    <color name="background_ellipsis">#36383e</color>
+    <color name="background_ellipsis_active">#36383e</color>
+    <color name="color_ellipsis">#85897d</color>
+    <color name="color_ellipsis_active">#FFFFFF</color>
+    <color name="divider_row_source">#26292d</color>
+    <color name="dot_row_source">#34b687</color>
+    <color name="background_active_source_container">#36383e</color>
+    <color name="background_field_resource">#4c4d50</color>
+    <color name="background_btn_attribute">#4c4d50</color>
+    <color name="color_label_field_resource">#979797</color>
+    <color name="color_value_field_resource">#da8b50</color>
+    <color name="btn_copy_active">#000000</color>
+    <color name="btn_copy_enactive">#E12E2E2E</color>
+    <color name="ok">#3aa340</color>
 </resources>

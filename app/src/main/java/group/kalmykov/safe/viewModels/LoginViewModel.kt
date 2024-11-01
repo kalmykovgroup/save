@@ -13,13 +13,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import group.kalmykov.safe.functions.vibrator
 import group.kalmykov.safe.models.Routes
 import group.kalmykov.safe.ui.screens.LoginScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private var navController: NavHostController, private val context: Context) : ViewModel() {
+class LoginViewModel(private var navController: NavHostController) : ViewModel() {
 
     var passBoxArray = mutableStateListOf<Int?>(null, null, null, null, null)
     var currentIndex by mutableStateOf(0)
@@ -43,7 +44,7 @@ class LoginViewModel(private var navController: NavHostController, private val c
         if(currentIndex > 0) passBoxArray[--currentIndex] = null
     }
 
-    fun Enter(digit: Int){
+    fun Enter(digit: Int, context : Context){
             if(currentIndex < 0 || currentIndex >= passBoxArray.size) return
 
             passBoxArray[currentIndex++] = digit
@@ -62,20 +63,7 @@ class LoginViewModel(private var navController: NavHostController, private val c
 
 
                 }else{
-                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
-                    val vibrationEffect1: VibrationEffect =
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)
-                        } else {
-                            Log.e("TAG", "Cannot vibrate device..")
-                            TODO("VERSION.SDK_INT < O")
-                        }
-
-                    // it is safe to cancel other
-                    // vibrations currently taking place
-                    vibrator.cancel()
-                    vibrator.vibrate(vibrationEffect1)
+                    vibrator(context)
 
                     isSuccess = false
 

@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ fun InputButtons(loginViewModel : LoginViewModel) {
         Pair(8, "ш щ ъ ы"),
         Pair(9, "ь э ю я"),
     )
+    val context = LocalContext.current
 
     LazyVerticalGrid(
         modifier = Modifier
@@ -48,7 +50,7 @@ fun InputButtons(loginViewModel : LoginViewModel) {
         items(buttons) {item ->
 
             Button(
-                onClick = { loginViewModel.Enter(item.first) },
+                onClick = { loginViewModel.Enter(item.first, context) },
                 modifier = Modifier.height(80.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors( containerColor = colorResource(R.color.passButton))
