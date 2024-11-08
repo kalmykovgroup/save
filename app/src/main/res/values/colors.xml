@@ -54,4 +54,9 @@
     <color name="btn_copy_active">#000000</color>
     <color name="btn_copy_enactive">#E12E2E2E</color>
     <color name="ok">#3aa340</color>
+    <color name="backgroundModelAddSource">#36383e</color>
+    <color name="focusedContainerColorCommonField">#4c4d50</color>
+    <color name="unfocusedContainerColorCommonField">#4c4d50</color>
+    <color name="colorTextContainerColorCommonField">#da8b50</color>
+    <color name="dataContainerColorCommonField">#2aaefe</color>
 </resources>
