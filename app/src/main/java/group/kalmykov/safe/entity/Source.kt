@@ -1,32 +1,22 @@
-package group.kalmykov.safe.models
+package group.kalmykov.safe.entity
 
-import android.database.Cursor
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import group.kalmykov.safe.db.SourceContract
-
-
-@Entity
-data class User(
-    @PrimaryKey val uid: Int,
-    @ColumnInfo(name = "first_name") val firstName: String?,
-    @ColumnInfo(name = "last_name") val lastName: String?
-)
 
 
 @Entity(tableName = "sources")
 class Source {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     var id: Int = 0
 
     @ColumnInfo("host")
-    var host: String? = null
+    var host: String = ""
 
     @ColumnInfo("password")
-    var password: String? = null
+    var password: String = ""
 
     @ColumnInfo("username")
     var username : String? = null
@@ -34,6 +24,14 @@ class Source {
     @ColumnInfo("description")
     var description: String? = null
 
+    constructor() {}
+
+    constructor(description: String?, username: String?, password: String, host: String) {
+        this.description = description
+        this.username = username
+        this.password = password
+        this.host = host
+    }
 }
 
 

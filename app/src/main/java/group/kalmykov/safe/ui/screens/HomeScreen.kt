@@ -74,7 +74,7 @@ class HomeScreen(val homeViewModel: HomeViewModel
 
         ){ innerPadding ->
             if(isOpenDialogAddSource){
-                AddSourceModal({ isOpenDialogAddSource = false }, { source -> homeViewModel.sources.add(source)});
+                AddSourceModal({ isOpenDialogAddSource = false }, { source -> homeViewModel.sourceRepository.add(source)})
             }
 
            Box(

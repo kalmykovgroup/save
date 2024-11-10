@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import group.kalmykov.safe.dao.SourceDao
 import group.kalmykov.safe.entity.Source
 
-@Database(entities = [Source::class], version = 3)
+@Database(entities = [Source::class], version = 1)
 abstract class AppDd : RoomDatabase() {
 
     abstract fun sourceDao(): SourceDao

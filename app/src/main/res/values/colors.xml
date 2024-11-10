@@ -37,6 +37,15 @@
     <color name="password_divider">#1F1F1F</color>
     <color name="background_active_source">#9C4E8EA8</color>
 
+    <!--набор цветов для анимации, border при активном контекстном меню-->
+     <color name="anim_border_color1">#B90000</color>
+     <color name="anim_border_color2">#da8b50</color>
+     <color name="anim_border_color3">#00B50A</color>
+     <color name="anim_border_color4">#E600E3</color>
+     <color name="anim_border_color5">#00DB29</color>
+     <color name="anim_border_color6">#4949E6</color>
+    <!--end-->
+
 
     <color name="background_item_source">#18191d</color>
     <color name="color_source_name">#2aaefe</color>
