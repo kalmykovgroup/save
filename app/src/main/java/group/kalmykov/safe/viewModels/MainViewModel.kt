@@ -13,17 +13,21 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import group.kalmykov.safe.db.DbContext
-import group.kalmykov.safe.db.DbHelper
+import group.kalmykov.safe.db.AppDd
 import group.kalmykov.safe.models.Routes
+import group.kalmykov.safe.repository.SourceRepository
 
 class MainViewModel(private var navController: NavHostController, context: Context) : ViewModel(){
   //  val dbHelper: DbHelper = DbHelper(context)
 
+    val db = AppDd.getInstance(context.applicationContext)
+
     private var LoginViewModel = LoginViewModel(navController);
     private var homeViewModel = HomeViewModel(this);
 
-    val dbContext: DbContext = DbContext(context)
+
+
+   // val dbContext: DbContext = DbContext(context)
 
     @Composable
     fun NavHostContainer(){

@@ -3,14 +3,23 @@ package group.kalmykov.safe.ui.components.homeScreen.listSources
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,12 +38,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -62,20 +74,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
 import group.kalmykov.safe.functions.vibrator
-import group.kalmykov.safe.models.Source
+import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.ui.components.homeScreen.buffer.rememberClipboardText
 import group.kalmykov.safe.ui.screens.HomeScreen
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 
-class ListSources(val homeScreen: HomeScreen) : ViewModel() {
-
+class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
 
     private var activeSource : Source? by mutableStateOf(null)
 
@@ -83,14 +92,17 @@ class ListSources(val homeScreen: HomeScreen) : ViewModel() {
 
     private var deleteSource: Source? by  mutableStateOf(null)
 
-
     @Composable
     fun Show(){
+
+        val sources by homeScreen.homeViewModel.sourceRepository.sources.collectAsState()
 
         if(editSource != null){
             EditSourceModal(
                 cancel = { editSource = null },
-                save = {},
+                save = {source ->
+                    homeScreen.homeViewModel.sourceRepository.update(source)
+                },
                 editSource!!
             )
         }
@@ -102,7 +114,11 @@ class ListSources(val homeScreen: HomeScreen) : ViewModel() {
                 title = { Text(text = "Подтверждение действия") },
                 text = { Text("Вы действительно хотите удалить выбранный элемент?") },
                 confirmButton = {
-                    Button({ homeScreen.homeViewModel.sources.remove(deleteSource); deleteSource = null }) {
+                    Button({
+                        homeScreen.homeViewModel.sourceRepository.delete(deleteSource!!.id)
+                        deleteSource = null
+                    }
+                    ) {
                         Text("OK", fontSize = 22.sp)
                     }
                 }
@@ -110,93 +126,182 @@ class ListSources(val homeScreen: HomeScreen) : ViewModel() {
         }
 
         LazyColumn {
-            itemsIndexed(homeScreen.homeViewModel.sources){ index, item -> SourceItemUi(item, homeScreen.homeViewModel.sources.size - index.toFloat())}
+          itemsIndexed(sources, key = { _, item -> item.id }){ index, item -> SourceItemUi(item, sources.size - index.toFloat())}
         }
 
     }
 
-
     @Composable
     fun SourceItemUi(source: Source, zIndex: Float){
+        WrapperContextMenu(source, zIndex)
+    }
 
-        var isSourceOpen by remember { mutableStateOf(false) }
+    @Composable
+    fun WrapperContextMenu(source: Source, zIndex: Float){
 
-        isSourceOpen = activeSource == source
+        val infiniteTransition = rememberInfiniteTransition()
 
+        // Анимация, которая изменяет цвет градиента
+        val animatedColor by infiniteTransition.animateColor(
+            initialValue = Color.Cyan,
+            targetValue = Color.Magenta,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 4000
+                    Color.Red at 0
+                    Color.Magenta at 1000
+                    Color.Blue at 2000
+                    Color.Green at 3000
+                    Color.Yellow at 4000
+                },
+                repeatMode = RepeatMode.Reverse
+            ), label = ""
+        )
 
-        Column(modifier = Modifier.zIndex(zIndex)) {
+        var isMenuExpanded by remember { mutableStateOf(false) }
 
-            Row(modifier = Modifier
-                .zIndex(1f)
-                .fillMaxWidth()
-                .background(color = colorResource(R.color.background_item_source))
-                .clickable(onClick = {
-                    if (isSourceOpen){
-                        activeSource = null
-                    } else{
-                        activeSource = source
-                        dragNewHeightPx = 0f
-                    }
-                })
-                .height(40.dp),
-                verticalAlignment = Alignment.CenterVertically){
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Image(
-                            imageVector = ImageVector.vectorResource(R.drawable.dot),
-                            contentDescription = ".",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.width(20.dp),
-                            colorFilter = ColorFilter.tint(colorResource(R.color.dot_row_source))
+        Box(modifier = Modifier.zIndex(zIndex).background(Color.Transparent) ){
+            Column {
+
+                SourceItemUiContent(source, animatedColor, isMenuExpanded) { isMenuExpanded = true }
+
+                Box(modifier = Modifier.fillMaxWidth().padding(start = 20.dp).height(0.dp)){
+                    // Контекстное меню
+                    DropdownMenu(
+                        modifier = Modifier.background(colorResource(R.color.background_field_resource)).padding(5.dp) // Изменение цвета фона
+                        ,
+                        properties = PopupProperties(focusable = true) // Изменение цвета фона
+                        ,
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            modifier = Modifier.background(Color.Transparent),
+                            text = { Text("Удалить", style = TextStyle(color = colorResource(R.color.color_value_field_resource))) },
+                            onClick = {
+                                isMenuExpanded = false
+                                deleteSource = source
+                            }
                         )
 
-                        Text(text = source.host, style = TextStyle(fontSize = 17.sp, color = colorResource(R.color.color_source_name)))
-                    }
-                }
+                        HorizontalDivider(thickness = 1.dp, color = animatedColor)
 
-
-                Box(modifier = Modifier
-                    .width(50.dp), contentAlignment = Alignment.CenterEnd){
-                    Row(modifier = Modifier
-                        .fillMaxHeight()
-                        .background(
-                            color = colorResource(
-                                if (isSourceOpen)
-                                    R.color.background_ellipsis_active
-                                else
-                                    R.color.background_ellipsis
-                            )
+                        DropdownMenuItem(
+                            text = { Text("Изменить", style = TextStyle(color = colorResource(R.color.color_value_field_resource))) },
+                            onClick = {
+                                isMenuExpanded = false
+                                editSource = source
+                            }
                         )
-                        .padding(
-                            start = (if (isSourceOpen) 5.dp else 3.dp),
-                            top = 2.dp,
-                            end = (if (isSourceOpen) 5.dp else 3.dp),
-                            bottom = 4.dp
-                        ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(textAlign = TextAlign.Center, text = "{",
-                            style = TextStyle(
-                                fontSize = 17.sp,
-                                color = colorResource(if(isSourceOpen) R.color.color_ellipsis_active else R.color.color_ellipsis)
-                            )
-                        )
-                        if(!isSourceOpen){
-                            Text(textAlign = TextAlign.Center, text = " . . . ", style = TextStyle(fontSize = 17.sp, color = colorResource(R.color.color_ellipsis)))
-                            Text(textAlign = TextAlign.Center, text = "}", style = TextStyle(fontSize = 17.sp, color = colorResource(R.color.color_ellipsis)))
-                        }
-
                     }
-
                 }
             }
+
+        }
+    }
+
+    @Composable
+    fun SourceItemUiContent(source: Source, animatedColor: Color, isMenuExpanded: Boolean, openContextMenu: () -> Unit){
+        var isSourceOpen by remember { mutableStateOf(false) }
+
+        isSourceOpen = activeSource?.id == source.id
+
+        Column{
+
+           Box(modifier = Modifier.fillMaxWidth().zIndex(1f)){
+               Row(modifier = Modifier
+                   .then(
+                       if (isMenuExpanded) {
+                           Modifier.graphicsLayer(shadowElevation = 20f) // "Светящийся" эффект с тенью
+                               .border(
+                                   width = 1.dp,
+                                   color = animatedColor,
+                                   shape = RoundedCornerShape(5.dp)
+                               )
+
+                       } else {
+                           Modifier
+                       }
+                   )
+                   .zIndex(1f)
+                   .fillMaxWidth()
+                   .background(color = colorResource(R.color.background_item_source))
+                   .pointerInput(source.id) {
+                       detectTapGestures(
+                           onTap = {
+                               if (isSourceOpen){
+                                   activeSource = null
+                               } else{
+                                   activeSource = source
+                                   dragNewHeightPx = 0f
+                               }
+                           },
+                           onLongPress = {
+                               openContextMenu()
+                           }
+                       )
+                   }
+                   .height(50.dp),
+                   verticalAlignment = Alignment.CenterVertically){
+                   Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart){
+                       Row(verticalAlignment = Alignment.CenterVertically){
+                           Image(
+                               imageVector = ImageVector.vectorResource(R.drawable.dot),
+                               contentDescription = ".",
+                               contentScale = ContentScale.Fit,
+                               modifier = Modifier.width(20.dp),
+                               colorFilter = ColorFilter.tint(colorResource(R.color.dot_row_source))
+                           )
+
+                           Text(text = source.host, style = TextStyle(fontSize = 17.sp, color = colorResource(R.color.color_source_name)))
+                       }
+                   }
+
+
+                   Box(modifier = Modifier
+                       .width(50.dp), contentAlignment = Alignment.CenterEnd){
+                       Row(modifier = Modifier
+                           .fillMaxHeight()
+                           .background(
+                               color = colorResource(
+                                   if (isSourceOpen)
+                                       R.color.background_ellipsis_active
+                                   else
+                                       R.color.background_ellipsis
+                               )
+                           )
+                           .padding(
+                               start = (if (isSourceOpen) 5.dp else 3.dp),
+                               top = 2.dp,
+                               end = (if (isSourceOpen) 5.dp else 3.dp),
+                               bottom = 4.dp
+                           ),
+                           verticalAlignment = Alignment.CenterVertically
+                       ){
+                           val textStyle = if (isMenuExpanded) {
+                               TextStyle( color = animatedColor, fontSize = 17.sp)
+                           } else {
+                               TextStyle( color = colorResource(R.color.color_ellipsis), fontSize = 17.sp)
+                           }
+
+                           Text(textAlign = TextAlign.Center, text = "{", style = textStyle)
+
+                           if(!isSourceOpen){
+                               Text(textAlign = TextAlign.Center, text = " . . . ", style = textStyle)
+                               Text(textAlign = TextAlign.Center, text = "}", style = textStyle)
+                           }
+
+                       }
+
+                   }
+               }
+           }
 
             SourceContainerActiveAnimate(source, isSourceOpen)
 
 
             HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.divider_row_source))
         }
-
     }
 
     @Composable
@@ -226,7 +331,6 @@ class ListSources(val homeScreen: HomeScreen) : ViewModel() {
 
         var offsetX by remember { mutableFloatStateOf(0f) }
         var offsetY by remember { mutableFloatStateOf(0f) }
-
 
         ContainerModalTop(modifier = Modifier, heightPx = if(isStartDrag || dragNewHeightPx.toInt() > 0 ) dragNewHeightPx.toInt() else null){
 
@@ -397,7 +501,6 @@ class ListSources(val homeScreen: HomeScreen) : ViewModel() {
                 }
             }
         }
-
     }
 
     @Composable

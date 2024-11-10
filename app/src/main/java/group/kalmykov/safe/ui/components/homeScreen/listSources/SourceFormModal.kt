@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import group.kalmykov.safe.R
-import group.kalmykov.safe.models.Source
+import group.kalmykov.safe.entity.Source
 
 @Composable
 fun SourceFormModal(cancel: () -> Unit, save: (Source) -> Unit, source : Source? = null){
