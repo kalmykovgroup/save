@@ -1,15 +1,9 @@
 package group.kalmykov.safe.repository;
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import group.kalmykov.safe.dao.SourceDao
 import group.kalmykov.safe.entity.Source
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -46,6 +40,12 @@ class SourceRepository(private val sourceDao: SourceDao) : ViewModel()  {
     fun deleteAll() {
         viewModelScope.launch {
             sourceDao.deleteAll()
+        }
+    }
+
+    fun deleteAll(ids: List<Int>) {
+        viewModelScope.launch {
+            sourceDao.deleteItemsByIds(ids)
         }
     }
 }

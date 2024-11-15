@@ -45,7 +45,7 @@ import group.kalmykov.safe.viewModels.LoginViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(loginViewModel : LoginViewModel){
+fun LoginScreen(loginViewModel : LoginViewModel, supportsBiometrics: Boolean, showBiometrics: () -> Unit){
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -57,10 +57,10 @@ fun LoginScreen(loginViewModel : LoginViewModel){
 
     ) {
 
-        Column {
+         Column {
             InputBoxes(loginViewModel)
             InputButtons(loginViewModel)
-            ButtonInputButtons(loginViewModel)
+            ButtonInputButtons(loginViewModel, supportsBiometrics, showBiometrics)
         }
 
     }

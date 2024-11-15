@@ -30,7 +30,7 @@ import group.kalmykov.safe.viewModels.LoginViewModel
 
 
 @Composable
-fun ButtonInputButtons(loginViewModel : LoginViewModel){
+fun ButtonInputButtons(loginViewModel : LoginViewModel, supportsBiometrics: Boolean, showBiometrics: () -> Unit){
     Row(modifier = Modifier
         .padding(10.dp, 0.dp)
         .background(color = Color.Transparent),
@@ -85,10 +85,10 @@ fun ButtonInputButtons(loginViewModel : LoginViewModel){
         Box(modifier = Modifier
             .height(80.dp)
             .weight(1f), contentAlignment = Alignment.Center){
-            if(loginViewModel.currentIndex == 0 ){
+            if(loginViewModel.currentIndex == 0 && supportsBiometrics){
                 //Отпечаток пальца
                 Button(
-                    onClick = {  },
+                    onClick = { showBiometrics() },
                     modifier = Modifier
                         .height(80.dp)
                         .fillMaxWidth(),

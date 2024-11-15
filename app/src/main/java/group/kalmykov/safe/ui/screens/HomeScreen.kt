@@ -2,22 +2,36 @@ package group.kalmykov.safe.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,12 +41,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
+import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.ui.components.homeScreen.buffer.Buffer
 import group.kalmykov.safe.ui.components.homeScreen.listSources.AddSourceModal
 import group.kalmykov.safe.ui.components.homeScreen.listSources.ListSources
@@ -67,8 +83,65 @@ class HomeScreen(val homeViewModel: HomeViewModel
                 )
             } ,
             floatingActionButton = {
-                FloatingActionButton(onClick = { isOpenDialogAddSource = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
+                if(listSources.selectedList.size == 0) {
+                    FloatingActionButton(onClick = { isOpenDialogAddSource = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add")
+                    }
+                }
+            },
+            bottomBar = {
+                if(listSources.selectedList.size > 0){
+
+                   var deleteSources: Boolean by  remember { mutableStateOf(false) }
+
+                    if (deleteSources) {
+                        AlertDialog(
+                            onDismissRequest = { deleteSources = false},
+                            title = { Text(text = "Подтверждение действия") },
+                            text = { Text("Вы действительно хотите удалить выбранные элементы?") },
+                            confirmButton = {
+                                Row (modifier = Modifier.fillMaxWidth(),  horizontalArrangement = Arrangement.End){
+                                    Button(
+                                        modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+                                        onClick = { deleteSources = false}
+                                    ) {
+                                        Text("Отменить", fontSize = 17.sp)
+                                    }
+
+                                    Button(
+                                        modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+                                        onClick = {
+                                            homeViewModel.sourceRepository.deleteAll(listSources.selectedList.map { item -> item.id })
+                                            listSources.selectedList.clear()
+                                        }
+                                    ) {
+                                        Text("Ok", fontSize = 17.sp)
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    BottomAppBar(
+                        containerColor = Color.DarkGray,
+                        contentColor = Color.LightGray
+                    ){
+                       Row(modifier = Modifier.fillMaxSize()){
+                           Box(contentAlignment = Alignment.Center,
+                               modifier = Modifier.weight(1f).fillMaxHeight().clickable {
+                                   deleteSources = true
+                               }){
+                               Text(text = "Удалить")
+                           }
+                           VerticalDivider(thickness = 0.5.dp, color = Color.Gray)
+                           Box(contentAlignment = Alignment.Center,
+                               modifier = Modifier.weight(1f).fillMaxHeight().clickable {
+                                   listSources.selectedList.clear()
+                               }){
+                               Text(text = "Отменить")
+                           }
+                       }
+                    }
                 }
             }
 
@@ -90,8 +163,7 @@ class HomeScreen(val homeViewModel: HomeViewModel
                     Box(modifier = Modifier.fillMaxWidth().height(20.dp), contentAlignment = Alignment.CenterStart){
                         Text(text = "@Composable", color = colorResource(R.color.composable), style = TextStyle(fontSize = 10.sp))
                     }
-                     listSources.Show()
-
+                    listSources.Show()
                 }
             }
         }

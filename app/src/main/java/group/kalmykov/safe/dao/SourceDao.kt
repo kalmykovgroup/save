@@ -42,4 +42,7 @@ interface SourceDao {
     @Query("DELETE FROM sources")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM sources WHERE id IN (:ids)")
+    suspend fun deleteItemsByIds(ids: List<Int>)
+
 }
