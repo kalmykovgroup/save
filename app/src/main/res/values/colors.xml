@@ -68,4 +68,15 @@
     <color name="unfocusedContainerColorCommonField">#4c4d50</color>
     <color name="colorTextContainerColorCommonField">#da8b50</color>
     <color name="dataContainerColorCommonField">#2aaefe</color>
+
+    <!--welcome -->
+
+    <color name="welcome_text_color_1">#FFFFFF</color>
+    <color name="welcome_text_color_2">#FFFFFF</color>
+    <color name="welcome_text_color_3">#FFFFFF</color>
+    <color name="welcome_text_color_4">#545454</color>
+    <color name="w_btn_container">#222E50</color>
+    <color name="w_btn_color">#FFFFFF</color>
+    <color name="w_btn_border">#222E50</color>
+
 </resources>

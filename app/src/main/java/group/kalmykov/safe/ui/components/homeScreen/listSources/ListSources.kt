@@ -5,13 +5,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
@@ -38,6 +36,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -46,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -74,7 +74,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
@@ -92,8 +91,30 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
 
     private var deleteSource: Source? by  mutableStateOf(null)
 
+    val selectedList: MutableList<Source> = mutableStateListOf()
+
+
     @Composable
     fun Show(){
+
+        val infiniteTransition = rememberInfiniteTransition(label = "")
+
+        val animatedColor by infiniteTransition.animateColor(
+            initialValue = Color.Cyan,
+            targetValue = Color.Magenta,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 12000
+                    Color.Red at 0
+                    Color.Magenta at 3000
+                    Color.Blue at 6000
+                    Color.Green at 9000
+                    Color.Yellow at 12000
+                },
+                repeatMode = RepeatMode.Reverse
+            ), label = ""
+        )
+
 
         val sources by homeScreen.homeViewModel.sourceRepository.sources.collectAsState()
 
@@ -114,94 +135,88 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                 title = { Text(text = "Подтверждение действия") },
                 text = { Text("Вы действительно хотите удалить выбранный элемент?") },
                 confirmButton = {
-                    Button({
-                        homeScreen.homeViewModel.sourceRepository.delete(deleteSource!!.id)
-                        deleteSource = null
-                    }
-                    ) {
-                        Text("OK", fontSize = 22.sp)
+                    Row (modifier = Modifier.fillMaxWidth(),  horizontalArrangement = Arrangement.End){
+                        Button(
+                            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+                            onClick = {deleteSource = null}
+                        ) {
+                            Text("Отменить", fontSize = 17.sp)
+                        }
+
+                        Button(
+                            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+                            onClick = {
+                                homeScreen.homeViewModel.sourceRepository.delete(deleteSource!!.id)
+                                deleteSource = null
+                            }
+                        ) {
+                            Text("Ok", fontSize = 17.sp)
+                        }
                     }
                 }
             )
         }
 
-        LazyColumn {
-          itemsIndexed(sources, key = { _, item -> item.id }){ index, item -> SourceItemUi(item, sources.size - index.toFloat())}
+        LazyColumn(modifier = Modifier.then(
+            if (selectedList.size > 0)
+            Modifier.fillMaxHeight().clickable {
+                selectedList.clear()
+            }
+            else Modifier)
+           ) {
+          itemsIndexed(sources, key = { _, item -> item.id }){ index, item ->
+              SourceItemUi(source = item, zIndex = sources.size - index.toFloat(), selectAnimatedColor = animatedColor)
+          }
         }
 
     }
 
     @Composable
-    fun SourceItemUi(source: Source, zIndex: Float){
-        WrapperContextMenu(source, zIndex)
+    fun SourceItemUi(source: Source, zIndex: Float, selectAnimatedColor: Color){
+        WrapperSourceItemUi(source = source, zIndex = zIndex, selectAnimatedColor = selectAnimatedColor)
     }
 
     @Composable
-    fun WrapperContextMenu(source: Source, zIndex: Float){
+    fun WrapperSourceItemUi(source: Source, zIndex: Float, selectAnimatedColor: Color){
 
-        val infiniteTransition = rememberInfiniteTransition()
+        var isSelectedCurrentItem by remember { mutableStateOf(selectedList.any{item -> item.id == source.id}) }
 
-        // Анимация, которая изменяет цвет градиента
-        val animatedColor by infiniteTransition.animateColor(
-            initialValue = Color.Cyan,
-            targetValue = Color.Magenta,
-            animationSpec = infiniteRepeatable(
-                animation = keyframes {
-                    durationMillis = 4000
-                    Color.Red at 0
-                    Color.Magenta at 1000
-                    Color.Blue at 2000
-                    Color.Green at 3000
-                    Color.Yellow at 4000
-                },
-                repeatMode = RepeatMode.Reverse
-            ), label = ""
-        )
+        isSelectedCurrentItem = selectedList.any{item -> item.id == source.id}
 
-        var isMenuExpanded by remember { mutableStateOf(false) }
-
-        Box(modifier = Modifier.zIndex(zIndex).background(Color.Transparent) ){
-            Column {
-
-                SourceItemUiContent(source, animatedColor, isMenuExpanded) { isMenuExpanded = true }
-
-                Box(modifier = Modifier.fillMaxWidth().padding(start = 20.dp).height(0.dp)){
-                    // Контекстное меню
-                    DropdownMenu(
-                        modifier = Modifier.background(colorResource(R.color.background_field_resource)).padding(5.dp) // Изменение цвета фона
-                        ,
-                        properties = PopupProperties(focusable = true) // Изменение цвета фона
-                        ,
-                        expanded = isMenuExpanded,
-                        onDismissRequest = { isMenuExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            modifier = Modifier.background(Color.Transparent),
-                            text = { Text("Удалить", style = TextStyle(color = colorResource(R.color.color_value_field_resource))) },
-                            onClick = {
-                                isMenuExpanded = false
-                                deleteSource = source
-                            }
-                        )
-
-                        HorizontalDivider(thickness = 1.dp, color = animatedColor)
-
-                        DropdownMenuItem(
-                            text = { Text("Изменить", style = TextStyle(color = colorResource(R.color.color_value_field_resource))) },
-                            onClick = {
-                                isMenuExpanded = false
-                                editSource = source
-                            }
-                        )
-                    }
+        Row(modifier = Modifier.zIndex(zIndex)){
+            if(selectedList.size > 0){
+                Box(modifier = Modifier.width(30.dp).fillMaxHeight().clickable {
+                    selectSource(source)
+                }){
+                    Checkbox(
+                        checked = isSelectedCurrentItem,
+                        onCheckedChange = { selectSource(source) }
+                    )
                 }
             }
 
+          SourceItemUiContent(source = source, isSelectedCurrentItem = isSelectedCurrentItem, selectAnimatedColor = selectAnimatedColor, onLongPress = {
+              selectedList.clear()
+              activeSource = null
+              selectedList.add(source)
+          })
+        }
+    }
+
+    private fun selectSource(source: Source){
+        if(selectedList.any{item -> item.id == source.id}){
+            if(selectedList.size == 1){
+                selectedList.clear()
+            }else{
+                selectedList.removeIf{item -> item.id == source.id}
+            }
+        }else{
+            selectedList.add(source)
         }
     }
 
     @Composable
-    fun SourceItemUiContent(source: Source, animatedColor: Color, isMenuExpanded: Boolean, openContextMenu: () -> Unit){
+    fun SourceItemUiContent(source: Source, isSelectedCurrentItem: Boolean, selectAnimatedColor: Color,onLongPress: () -> Unit){
         var isSourceOpen by remember { mutableStateOf(false) }
 
         isSourceOpen = activeSource?.id == source.id
@@ -211,11 +226,11 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
            Box(modifier = Modifier.fillMaxWidth().zIndex(1f)){
                Row(modifier = Modifier
                    .then(
-                       if (isMenuExpanded) {
+                       if (isSelectedCurrentItem) {
                            Modifier.graphicsLayer(shadowElevation = 20f) // "Светящийся" эффект с тенью
                                .border(
                                    width = 1.dp,
-                                   color = animatedColor,
+                                   color = selectAnimatedColor,
                                    shape = RoundedCornerShape(5.dp)
                                )
 
@@ -229,15 +244,20 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                    .pointerInput(source.id) {
                        detectTapGestures(
                            onTap = {
-                               if (isSourceOpen){
-                                   activeSource = null
-                               } else{
-                                   activeSource = source
-                                   dragNewHeightPx = 0f
+                               if(selectedList.size == 0){
+                                   if (isSourceOpen){
+                                       activeSource = null
+                                   } else{
+                                       activeSource = source
+                                       dragNewHeightPx = 0f
+                                   }
+                               }else{
+                                   selectSource(source)
                                }
+
                            },
                            onLongPress = {
-                               openContextMenu()
+                               onLongPress()
                            }
                        )
                    }
@@ -278,17 +298,20 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                            ),
                            verticalAlignment = Alignment.CenterVertically
                        ){
-                           val textStyle = if (isMenuExpanded) {
-                               TextStyle( color = animatedColor, fontSize = 17.sp)
+                           val color = if (isSelectedCurrentItem) {
+                                selectAnimatedColor
                            } else {
-                               TextStyle( color = colorResource(R.color.color_ellipsis), fontSize = 17.sp)
+                               if(isSourceOpen){
+                                   Color.White
+                               }else
+                                   colorResource(R.color.color_ellipsis)
                            }
 
-                           Text(textAlign = TextAlign.Center, text = "{", style = textStyle)
+                           Text(textAlign = TextAlign.Center, text = "{", color = color)
 
                            if(!isSourceOpen){
-                               Text(textAlign = TextAlign.Center, text = " . . . ", style = textStyle)
-                               Text(textAlign = TextAlign.Center, text = "}", style = textStyle)
+                               Text(textAlign = TextAlign.Center, text = " . . . ", fontSize = 17.sp, color = color)
+                               Text(textAlign = TextAlign.Center, text = "}", fontSize = 17.sp, color = color)
                            }
 
                        }
@@ -343,162 +366,152 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                         .fillMaxWidth()
                         .pointerInput(Unit) {
                             detectDragGestures(
-                                onDragStart = { offsetY = 0f },
-                                onDragEnd = {
-                                    if(offsetY < -200) activeSource = null
+                                onDragStart = {
+                                    offsetY = 0f
+                                    isStartDrag = true //Говорим что нужно начать применять изменение размера блока
+                                },
+                                onDragEnd = { if(offsetY < 0) activeSource = null
+
+                                    isStartDrag = false
+                                    offsetY = 0f
                                 },
                                 onDragCancel = { },
                                 onDrag = { change, offset ->
                                     change.consume()
-                                    offsetX += offset.x
+
                                     offsetY += offset.y
+
+                                    var res = originalColumnHeightPx + offsetY;
+
+                                    res = if(res < 0) 1F else res
+
+                                    dragNewHeightPx = if(res > originalColumnHeightPx) originalColumnHeightPx else res
                                 }
                             )
                         }
-                        .background(color = colorResource(R.color.background_active_source_container))
-                        .padding(start = 10.dp, top = 0.dp, end = 10.dp)
                 ) {
 
 
                     Column {
-                        InputContainer(label = "Username", inputField = {
-                            BasicTextField(
-                                value = (source.username ?: ""),
-                                singleLine = true,
-                                onValueChange = {},
-                                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                readOnly = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(color = Color.Transparent),
-                                //visualTransformation = visualTransformation,
-                                //  keyboardOptions = keyboardOptions
-                            )
-                        }, attributes = {
-                            BtnCopy(value = source.username)
-                        })
-
-                        InputContainer(label = "Password", inputField = {
-                            BasicTextField(
-                                value = source.password,
-                                singleLine = true,
-                                onValueChange = {},
-                                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                readOnly = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(color = Color.Transparent),
-                                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                            )
-                        }, attributes = {
-                            BtnShow(passwordVisibility) { passwordVisibility = it }
-                            BtnCopy(value = source.password)
-                        })
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp)
-                                .clip(shape = RoundedCornerShape(5.dp))
-                                .background(color = colorResource(R.color.background_field_resource))
-                                .padding(13.dp, 30.dp, 13.dp, 15.dp)
+                        Column(modifier = Modifier
+                            .background(color = colorResource(R.color.background_active_source_container))
+                            .padding(start = 10.dp, top = 0.dp, end = 10.dp)
                         ) {
+                            InputContainer(label = "Username", inputField = {
+                                BasicTextField(
+                                    value = (source.username ?: ""),
+                                    singleLine = true,
+                                    onValueChange = {},
+                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Transparent),
+                                    //visualTransformation = visualTransformation,
+                                    //  keyboardOptions = keyboardOptions
+                                )
+                            }, attributes = {
+                                BtnCopy(value = source.username)
+                            })
 
-                            Text(
-                                text = "Description",
-                                style = TextStyle(
-                                    fontSize = 12.sp,
-                                    color = colorResource(R.color.color_label_field_resource)
-                                ),
-                                modifier = Modifier
-                                    .align(AbsoluteAlignment.TopLeft)
-                                    .offset(y = (-20).dp)
-                            )
+                            InputContainer(label = "Password", inputField = {
+                                BasicTextField(
+                                    value = source.password,
+                                    singleLine = true,
+                                    onValueChange = {},
+                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Transparent),
+                                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                                )
+                            }, attributes = {
+                                BtnShow(passwordVisibility) { passwordVisibility = it }
+                                BtnCopy(value = source.password)
+                            })
 
-                            BasicTextField(
-                                value = (if (source.description.isNullOrEmpty()) "Не примечаний" else source.description.toString()),
-                                singleLine = false,
-                                onValueChange = {},
-                                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                readOnly = true,
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(color = Color.Transparent)
-                            )
+                                    .padding(5.dp)
+                                    .clip(shape = RoundedCornerShape(5.dp))
+                                    .background(color = colorResource(R.color.background_field_resource))
+                                    .padding(13.dp, 30.dp, 13.dp, 15.dp)
+                            ) {
+
+                                Text(
+                                    text = "Description",
+                                    style = TextStyle(
+                                        fontSize = 12.sp,
+                                        color = colorResource(R.color.color_label_field_resource)
+                                    ),
+                                    modifier = Modifier
+                                        .align(AbsoluteAlignment.TopLeft)
+                                        .offset(y = (-20).dp)
+                                )
+
+                                BasicTextField(
+                                    value = (if (source.description.isNullOrEmpty()) "Не примечаний" else source.description.toString()),
+                                    singleLine = false,
+                                    onValueChange = {},
+                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Transparent)
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp, 10.dp, 5.dp, 10.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Button(
+                                    onClick = { editSource = source },
+                                    content = { Text("Изменить") })
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Button(
+                                    onClick = { deleteSource = source },
+                                    content = { Text("Удалить") }
+                                )
+                            }
                         }
-
-                        Row(
-                            modifier = Modifier
+                        Column(modifier = Modifier.clickable { activeSource = null }
+                        ){
+                            Box(
+                                modifier = Modifier
+                                    .width(30.dp)
+                                    .background(color = colorResource(R.color.background_active_source_container)),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Text(text = "}", color = colorResource(R.color.color_ellipsis_active))
+                            }
+                            Box(modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(5.dp, 10.dp, 5.dp, 10.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Button(
-                                onClick = { editSource = source },
-                                content = { Text("Изменить") })
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Button(
-                                onClick = { deleteSource = source },
-                                content = { Text("Удалить") }
-                            )
+                                .height(25.dp)
+                                .background(Color.Gray),
+                                contentAlignment = Alignment.Center)
+                            {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.width(100.dp).fillMaxHeight()){
+                                    Column {
+                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                                        Spacer(Modifier.height(5.dp))
+                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                                        Spacer(Modifier.height(5.dp))
+                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                                    }
+                                }
+
+                            }
                         }
                     }
 
                 }
-                Column(modifier = Modifier
-                    .clickable { activeSource = null }
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = {
-                                offsetY = 0f
-                                isStartDrag = true //Говорим что нужно начать применять изменение размера блока
-                            },
-                            onDragEnd = { if(offsetY < 0) activeSource = null
 
-                                isStartDrag = false
-                                offsetY = 0f
-                            },
-                            onDragCancel = { },
-                            onDrag = { change, offset ->
-                                change.consume()
-
-                                offsetY += offset.y
-
-                                var res = originalColumnHeightPx + offsetY;
-
-                                res = if(res < 0) 1F else res
-
-                                dragNewHeightPx = if(res > originalColumnHeightPx) originalColumnHeightPx else res
-                            }
-                        )
-                    },){
-                    Box(
-                        modifier = Modifier
-                            .width(30.dp)
-                            .background(color = colorResource(R.color.background_active_source_container)),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        Text(text = "}", color = colorResource(R.color.color_ellipsis_active))
-                    }
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(25.dp)
-                        .background(Color.Gray),
-                        contentAlignment = Alignment.Center)
-                    {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.width(100.dp).fillMaxHeight()){
-                            Column {
-                                HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                                Spacer(Modifier.height(5.dp))
-                                HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                                Spacer(Modifier.height(5.dp))
-                                HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                            }
-                        }
-
-                    }
-                }
             }
         }
     }

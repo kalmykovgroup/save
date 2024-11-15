@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+biometric = "1.2.0-alpha05"
 datastorePreferences = "1.1.1"
 datastoreVersion = "1.1.1"
 kotlin = "2.0.0"
@@ -19,8 +20,10 @@ navigationFragment = "2.8.3"
 navigationTesting = "2.8.3"
 navigationUi = "2.8.3"
 protobufJavalite = "3.18.0"
+securityCrypto = "1.1.0-alpha06"
 
 [libraries]
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 #noinspection SimilarGradleDependency
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
@@ -33,6 +36,7 @@ androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragme
 androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationTesting" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "navigationUi" }
 #noinspection SimilarGradleDependency
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 datastore-v100 = { module = "androidx.datastore:datastore", version.ref = "datastoreVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

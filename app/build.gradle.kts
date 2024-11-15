@@ -29,15 +29,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15" /*нижняя панель*/
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "21"
     }
     buildFeatures {
         compose = true
@@ -71,9 +71,8 @@ dependencies {
     // optional - Test helpers
     //testImplementation("androidx.room:room-testing:$room_version")
 
-    // optional - Paging 3 Integration
-   // implementation("androidx.room:room-paging:$room_version")
-
+   implementation(libs.androidx.biometric) //Биометрия
+    implementation(libs.androidx.security.crypto)
 
     implementation(libs.kotlinx.serialization.json)
 
@@ -110,6 +109,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(kotlin("reflect"))
+
+
 
 
     // Тестирование навигации
