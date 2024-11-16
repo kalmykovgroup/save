@@ -24,8 +24,6 @@ interface SourceDao {
             "last_name LIKE :last LIMIT 1")
     fun findByName(first: String, last: String): Source
 */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(vararg sources: Source)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(source: Source)
@@ -33,16 +31,23 @@ interface SourceDao {
     @Update
     suspend fun update(source: Source)
 
-    @Delete
-    suspend fun delete(source: Source)
-
     @Query("DELETE FROM sources WHERE id = :id")
     suspend fun delete(id: Int)
 
-    @Query("DELETE FROM sources")
-    suspend fun deleteAll()
-
     @Query("DELETE FROM sources WHERE id IN (:ids)")
     suspend fun deleteItemsByIds(ids: List<Int>)
+
+  @Query("""
+        SELECT * FROM sources 
+        WHERE host LIKE '%' || :filter || '%'
+        ORDER BY 
+            CASE 
+                WHEN host LIKE :filter || '%' THEN 1 
+                WHEN host LIKE '%' || :filter || '%' THEN 2 
+                ELSE 3 
+            END,
+            host COLLATE NOCASE
+    """)
+  fun getSourcesAndSortedEntities(filter: String): Flow<List<Source>>
 
 }
