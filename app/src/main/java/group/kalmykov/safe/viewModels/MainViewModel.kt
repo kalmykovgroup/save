@@ -14,6 +14,9 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import group.kalmykov.safe.db.AppDd
 import group.kalmykov.safe.models.Routes
 
@@ -22,22 +25,24 @@ class MainViewModel(private var navController: NavHostController, context: Conte
 
     val db = AppDd.getInstance(context.applicationContext)
 
-    private var loginViewModel = LoginViewModel(navController)
-    private var homeViewModel = HomeViewModel(this)
-    private var welcomeViewModel = WelcomeViewModel(navController)
+    private val isFirstLaunchFlagKey = "isFirstLaunch"
+
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+
+    private var loginViewModel = LoginViewModel(callbackOnSuccessfulLogin = { callbackOnSuccessfulLogin() }, this, context)
+    private var homeViewModel = HomeViewModel(mainViewModel = this)
+    private var welcomeViewModel = WelcomeViewModel(navController = navController)
     private var introductionViewModel = IntroductionViewModel()
-    private var createPinCodeViewModel = CreatePinCodeViewModel()
+    private var createPinCodeViewModel = CreatePinCodeViewModel(callBack = {createPinCodeCallBackSuccess(it)})
 
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
-   // val dbContext: DbContext = DbContext(context)
 
     @Composable
     fun NavHostContainer(){
 
         NavHost(
             navController = this.navController,
-            startDestination = if(isFirstLaunch()) Routes.Welcome.route else  Routes.Welcome.route,
+            startDestination = if(isFirstLaunch()) Routes.Welcome.route else  Routes.Login.route,
             modifier = Modifier,
 
             builder = {
@@ -49,18 +54,34 @@ class MainViewModel(private var navController: NavHostController, context: Conte
             })
     }
 
-    private val isFirstLaunchFlagKey = "isFirstLaunch"
+    private fun callbackOnSuccessfulLogin(){
+        navController.navigate(Routes.Home.route){
+            popUpTo(Routes.Login.route) { inclusive = true }
+        }
+    }
 
-    private fun isFirstLaunch(): Boolean {
-        // Проверяем значение флага "isFirstLaunch"
-        val isFirstLaunch = sharedPreferences.getBoolean(isFirstLaunchFlagKey, true)
+    private fun createPinCodeCallBackSuccess(pinCode: List<Int>) {
 
-        if (isFirstLaunch) {
-            // Если это первый запуск, устанавливаем флаг в false
-            sharedPreferences.edit().putBoolean(isFirstLaunchFlagKey, false).apply()
+        // Сохранение пароля
+        loginViewModel.saveEncryptedPassword(pinCode.joinToString(""))
+
+        //Сохранили информацию о том что мы уже заходили и создали пароль для входа
+        sharedPreferences.edit().putBoolean(isFirstLaunchFlagKey, false).apply()
+
+
+        navController.navigate(Routes.Home.route){
+            popUpTo(Routes.Introduction.route) { inclusive = true }
+            popUpTo(Routes.CreatePinCode.route) { inclusive = true }
+            popUpTo(Routes.Welcome.route) { inclusive = true }
         }
 
-        return isFirstLaunch
+    }
+    private fun isFirstLaunch(): Boolean {//Проверяем что это не первый вход
+        return sharedPreferences.getBoolean(isFirstLaunchFlagKey, true)
+    }
+
+    fun restartApp(){
+
     }
 
 

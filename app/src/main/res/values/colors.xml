@@ -79,4 +79,16 @@
     <color name="w_btn_color">#FFFFFF</color>
     <color name="w_btn_border">#222E50</color>
 
+    <!--CreatePinCodeScreen -->
+    <color name="background_brush_1">#553000</color>
+    <color name="background_brush_2">#341D00</color>
+    <color name="background_brush_3">#000000</color>
+    <color name="background_brush_4">#000000</color>
+    <color name="background_brush_5">#000000</color>
+    <color name="background_brush_6">#000B24</color>
+    <color name="background_brush_7">#001342</color>
+
+    <color name="starsRepeatPassword">#FFC107</color>
+    <color name="successPasswordsStars">#4CAF50</color>
+
 </resources>
