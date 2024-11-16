@@ -48,7 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import group.kalmykov.safe.R
+import group.kalmykov.safe.dao.SourceDao
 import group.kalmykov.safe.entity.Source
+import group.kalmykov.safe.repository.SourceRepository
 import group.kalmykov.safe.ui.components.homeScreen.buffer.Buffer
 import group.kalmykov.safe.ui.components.homeScreen.listSources.AddSourceModal
 import group.kalmykov.safe.ui.components.homeScreen.listSources.ListSources
@@ -56,10 +58,12 @@ import group.kalmykov.safe.ui.components.homeScreen.search.SearchComponent
 import group.kalmykov.safe.viewModels.HomeViewModel
 import kotlinx.coroutines.launch
 
-class HomeScreen(val homeViewModel: HomeViewModel
-): ViewModel(){
+class HomeScreen(sourceDao: SourceDao): ViewModel(){
 
-    private val searchComponent : SearchComponent = SearchComponent()
+    val searchComponent : SearchComponent = SearchComponent()
+
+    val sourceRepository: SourceRepository = SourceRepository(sourceDao)
+
     private val listSources : ListSources = ListSources(this)
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -111,7 +115,7 @@ class HomeScreen(val homeViewModel: HomeViewModel
                                     Button(
                                         modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
                                         onClick = {
-                                            homeViewModel.sourceRepository.deleteAll(listSources.selectedList.map { item -> item.id })
+                                            sourceRepository.deleteAll(listSources.selectedList.map { item -> item.id })
                                             listSources.selectedList.clear()
                                         }
                                     ) {
@@ -147,7 +151,7 @@ class HomeScreen(val homeViewModel: HomeViewModel
 
         ){ innerPadding ->
             if(isOpenDialogAddSource){
-                AddSourceModal({ isOpenDialogAddSource = false }, { source -> homeViewModel.sourceRepository.add(source)})
+                AddSourceModal({ isOpenDialogAddSource = false }, { source -> sourceRepository.add(source)})
             }
 
            Box(

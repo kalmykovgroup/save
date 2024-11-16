@@ -49,6 +49,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,6 +82,7 @@ import group.kalmykov.safe.functions.vibrator
 import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.ui.components.homeScreen.buffer.rememberClipboardText
 import group.kalmykov.safe.ui.screens.HomeScreen
+import kotlinx.coroutines.flow.StateFlow
 
 
 class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
@@ -116,13 +118,13 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
         )
 
 
-        val sources by homeScreen.homeViewModel.sourceRepository.sources.collectAsState()
+
 
         if(editSource != null){
             EditSourceModal(
                 cancel = { editSource = null },
                 save = {source ->
-                    homeScreen.homeViewModel.sourceRepository.update(source)
+                    homeScreen.sourceRepository.update(source)
                 },
                 editSource!!
             )
@@ -146,7 +148,7 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                         Button(
                             modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
                             onClick = {
-                                homeScreen.homeViewModel.sourceRepository.delete(deleteSource!!.id)
+                                homeScreen.sourceRepository.delete(deleteSource!!.id)
                                 deleteSource = null
                             }
                         ) {
@@ -157,6 +159,8 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
             )
         }
 
+        val sources by homeScreen.sourceRepository.getSourcesAndSortedEntities(homeScreen.searchComponent.search).collectAsState()
+
         LazyColumn(modifier = Modifier.then(
             if (selectedList.size > 0)
             Modifier.fillMaxHeight().clickable {
@@ -165,7 +169,7 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
             else Modifier)
            ) {
           itemsIndexed(sources, key = { _, item -> item.id }){ index, item ->
-              SourceItemUi(source = item, zIndex = sources.size - index.toFloat(), selectAnimatedColor = animatedColor)
+            SourceItemUi(source = item, zIndex = sources.size - index.toFloat(), selectAnimatedColor = animatedColor)
           }
         }
 
@@ -352,7 +356,6 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
 
         var passwordVisibility by  remember { mutableStateOf(false) }
 
-        var offsetX by remember { mutableFloatStateOf(0f) }
         var offsetY by remember { mutableFloatStateOf(0f) }
 
         ContainerModalTop(modifier = Modifier, heightPx = if(isStartDrag || dragNewHeightPx.toInt() > 0 ) dragNewHeightPx.toInt() else null){

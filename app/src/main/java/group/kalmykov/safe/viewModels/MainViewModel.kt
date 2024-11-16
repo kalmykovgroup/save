@@ -42,7 +42,7 @@ class MainViewModel(private var navController: NavHostController, context: Conte
 
         NavHost(
             navController = this.navController,
-            startDestination = if(isFirstLaunch()) Routes.Welcome.route else  Routes.Login.route,
+            startDestination = if(isFirstLaunch()) Routes.Welcome.route else  Routes.Home.route,
             modifier = Modifier,
 
             builder = {

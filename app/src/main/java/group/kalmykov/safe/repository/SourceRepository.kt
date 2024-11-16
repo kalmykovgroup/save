@@ -4,15 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import group.kalmykov.safe.dao.SourceDao
 import group.kalmykov.safe.entity.Source
+import group.kalmykov.safe.ui.components.homeScreen.search.SearchComponent
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SourceRepository(private val sourceDao: SourceDao) : ViewModel()  {
 
+    //val sources = sourceDao.all().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val sources = sourceDao.all().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
+    fun getSourcesAndSortedEntities(filter: String): StateFlow<List<Source>> {
+       return sourceDao.getSourcesAndSortedEntities(filter).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
 
     fun add(source: Source) {
         viewModelScope.launch {
@@ -31,21 +36,11 @@ class SourceRepository(private val sourceDao: SourceDao) : ViewModel()  {
             sourceDao.delete(id)
         }
     }
-    fun delete(source:Source) {
-        viewModelScope.launch {
-            sourceDao.delete(source)
-        }
-    }
-
-    fun deleteAll() {
-        viewModelScope.launch {
-            sourceDao.deleteAll()
-        }
-    }
 
     fun deleteAll(ids: List<Int>) {
         viewModelScope.launch {
             sourceDao.deleteItemsByIds(ids)
         }
     }
+
 }
