@@ -46,6 +46,9 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.transition)
+    implementation(libs.androidx.transition)
+    implementation(libs.androidx.transition)
     val room_version = "2.6.1"
 
     implementation("androidx.room:room-runtime:$room_version")

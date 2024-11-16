@@ -68,10 +68,10 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun WelcomeTextAnimation(text: String) {
+fun WelcomeTextAnimation(text: String, isLoadScreen: Boolean) {
 
-    var isStartAnimate by remember { mutableStateOf(false) }
-    var isMovedTextUpDown by remember { mutableStateOf(false) }
+    var isStartAnimate by remember { mutableStateOf(isLoadScreen) }
+    var isMovedTextUpDown by remember { mutableStateOf(isLoadScreen) }
 
     LaunchedEffect(Unit) {
         launch {
@@ -120,7 +120,7 @@ fun WelcomeTextAnimation(text: String) {
                 contentAlignment = Alignment.Center
             ) {
 
-               WelcomeText(text)
+               WelcomeText(text, isLoadScreen)
             }
 
         AnimatedVisibility(
@@ -156,21 +156,20 @@ fun WelcomeTextAnimation(text: String) {
             }
         }
 
-
     }
 }
 
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun WelcomeText(text: String) {
-    var gradientOffset by remember { mutableFloatStateOf(0f) }
+fun WelcomeText(text: String, isLoadScreen: Boolean) {
+    var gradientOffset by remember { mutableFloatStateOf(if(!isLoadScreen) 0f else 2f) }
 
-    var displayedText by remember { mutableStateOf("") }
+    var displayedText by remember { mutableStateOf(if(!isLoadScreen) "" else text) }
 
     var estimatedWidth by remember { mutableStateOf(0.dp) }
 
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(isLoadScreen) }
 
 
 
@@ -200,10 +199,11 @@ fun WelcomeText(text: String) {
 
 
     LaunchedEffect(text) {
+        if(isLoadScreen)  return@LaunchedEffect
+
         delay(1800)
         expanded = true
-        text.forEachIndexed {index, char ->
-
+        text.forEach{char ->
             delay(100) // Задержка между символами (настройте для скорости печати)
             displayedText += char
         }

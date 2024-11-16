@@ -21,6 +21,7 @@ navigationTesting = "2.8.3"
 navigationUi = "2.8.3"
 protobufJavalite = "3.18.0"
 securityCrypto = "1.1.0-alpha06"
+transition = "1.2.0"
 
 [libraries]
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
@@ -54,6 +55,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationComposeVersion" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobufJavalite" }
+androidx-transition = { group = "androidx.transition", name = "transition", version.ref = "transition" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

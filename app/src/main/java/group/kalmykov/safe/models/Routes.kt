@@ -7,4 +7,5 @@ sealed class Routes(val route: String) {
     data object Welcome : Routes("welcome_screen")
     data object Introduction  : Routes("introduction_screen")
     data object CreatePinCode  : Routes("create_pin_code_screen")
+    data object DestinationRoute  : Routes("destination_route")
 }
