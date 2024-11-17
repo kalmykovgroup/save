@@ -91,4 +91,8 @@
     <color name="starsRepeatPassword">#FFC107</color>
     <color name="successPasswordsStars">#4CAF50</color>
 
+    <!--password_generate -->
+    <color name="password_generate">#4CAF50</color>
+
+
 </resources>
