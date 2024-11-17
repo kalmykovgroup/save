@@ -42,6 +42,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -82,7 +83,9 @@ import group.kalmykov.safe.functions.vibrator
 import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.ui.components.homeScreen.buffer.rememberClipboardText
 import group.kalmykov.safe.ui.screens.HomeScreen
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 
 class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
@@ -160,6 +163,18 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
         }
 
         val sources by homeScreen.sourceRepository.getSourcesAndSortedEntities(homeScreen.searchComponent.search).collectAsState()
+
+
+
+
+        LaunchedEffect(Unit) {
+            launch {
+                delay(100)
+                if(sources.isNotEmpty()){
+                    editSource = sources[0]
+                }
+            }
+        }
 
         LazyColumn(modifier = Modifier.then(
             if (selectedList.size > 0)

@@ -18,7 +18,5 @@ class HomeViewModel(mainViewModel : MainViewModel) : ViewModel() {
         homeScreen.Show()
     }
 
-
-
 }
 

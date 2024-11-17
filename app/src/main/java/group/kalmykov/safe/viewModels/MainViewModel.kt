@@ -18,6 +18,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.security.crypto.MasterKeys
 import group.kalmykov.safe.db.AppDd
+import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.models.Routes
 
 class MainViewModel(private var navController: NavHostController, context: Context) : ViewModel(){
@@ -79,6 +80,8 @@ class MainViewModel(private var navController: NavHostController, context: Conte
     private fun isFirstLaunch(): Boolean {//Проверяем что это не первый вход
         return sharedPreferences.getBoolean(isFirstLaunchFlagKey, true)
     }
+
+
 
     fun restartApp(){
 

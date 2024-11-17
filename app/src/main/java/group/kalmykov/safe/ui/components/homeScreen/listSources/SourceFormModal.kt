@@ -1,33 +1,55 @@
 package group.kalmykov.safe.ui.components.homeScreen.listSources
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -48,10 +70,22 @@ fun SourceFormModal(cancel: () -> Unit, save: (Source) -> Unit, source : Source?
         content = {
             Column {
 
-                AddSourceTextField(host, {host = it}, "Source")
-                AddSourceTextField(username, {username = it}, "Username")
-                AddSourceTextField(password, {password = it}, "Password")
-                AddSourceTextField(description, {description = it}, "Description", Modifier.height(130.dp), {})
+                AddSourceTextField(value = host, setValue = {host = it}, label = "Source")
+                AddSourceTextField(value = username, setValue = {username = it}, label = "Username")
+                AddSourceTextField(value = password, setValue = {password = it}, label = "Password", iconButton = {
+                    Box(modifier = Modifier.fillMaxHeight().aspectRatio(1f).clickable {
+
+                    }, contentAlignment = Alignment.Center){
+                        Image(
+                            imageVector = ImageVector.vectorResource(R.drawable.password_generate),
+                            contentDescription = "pass",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.height(29.dp),
+                            colorFilter = ColorFilter.tint(colorResource(R.color.password_generate)),
+                        )
+                    }
+                })
+                AddSourceTextField(value = description, setValue = {description = it}, label = "Description", modifier = Modifier.height(130.dp))
 
                 Row (modifier = Modifier.fillMaxWidth(),  horizontalArrangement = Arrangement.End){
                     Button(
@@ -129,59 +163,91 @@ fun MyCustomDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddSourceTextField(value: String, setValue: (String) -> Unit, label: String? = null, modifier: Modifier = Modifier, callBack: @Composable() ((MutableInteractionSource) -> Unit)? = null){
+fun AddSourceTextField(
+    value: String,
+    setValue: (String) -> Unit,
+    label: String? = null,
+    modifier: Modifier = Modifier,
+    iconButton:  (@Composable () -> Unit)? = null){
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    if(callBack != null) callBack(interactionSource)
-    BasicTextField(
-        value = value,
-        singleLine = true,
-        interactionSource = interactionSource,
-        cursorBrush = Brush.verticalGradient(
-            colors = listOf(
-                colorResource(R.color.colorTextContainerColorCommonField),
-                colorResource(R.color.colorTextContainerColorCommonField),
-                colorResource(R.color.colorTextContainerColorCommonField),
-                colorResource(R.color.colorTextContainerColorCommonField),
-            )
-        ),
-        textStyle = TextStyle(color = colorResource(R.color.dataContainerColorCommonField), fontSize = 18.sp),
-        onValueChange = { setValue(it) },
-        modifier = modifier
-            .padding(5.dp)
-            .fillMaxWidth()
-    ) { innerTextField ->
-        OutlinedTextFieldDefaults.DecorationBox(
+        var occupiedButtonSpace by remember { mutableStateOf(0.dp) }
+         val localDensity = LocalDensity.current
+
+
+        BasicTextField(
             value = value,
-            innerTextField = innerTextField,
-            enabled = false,
             singleLine = true,
             interactionSource = interactionSource,
-            visualTransformation = VisualTransformation.None,
-            label = { if(label != null) Text(softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                text = label, color = colorResource(R.color.colorTextContainerColorCommonField)
-            ) },
-            container = {
-                OutlinedTextFieldDefaults.ContainerBox(
-                    enabled = true,
-                    isError = false,
-                    interactionSource = interactionSource,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = colorResource(R.color.focusedContainerColorCommonField),
-                        unfocusedContainerColor = colorResource(R.color.unfocusedContainerColorCommonField),
-                        focusedTextColor = colorResource(R.color.colorTextContainerColorCommonField),
-                        unfocusedTextColor = colorResource(R.color.colorTextContainerColorCommonField),
-                        focusedBorderColor = colorResource(R.color.colorTextContainerColorCommonField),
-                        unfocusedBorderColor = colorResource(R.color.border_common_text_field_unfocused),
-
-                        ),
-                    shape = RoundedCornerShape(6.dp),
-                    focusedBorderThickness = 1.dp,
-                    unfocusedBorderThickness = 1.dp,
+            cursorBrush = Brush.verticalGradient(
+                colors = listOf(
+                    colorResource(R.color.colorTextContainerColorCommonField),
+                    colorResource(R.color.colorTextContainerColorCommonField),
+                    colorResource(R.color.colorTextContainerColorCommonField),
+                    colorResource(R.color.colorTextContainerColorCommonField),
                 )
+            ),
+            textStyle = TextStyle(color = colorResource(R.color.dataContainerColorCommonField), fontSize = 18.sp),
+            onValueChange = { setValue(it) },
+            modifier = modifier
+                .padding(5.dp)
+                .height(55.dp)
+                .fillMaxWidth()
+        ) { innerTextField ->
+
+            Box(contentAlignment = Alignment.CenterEnd){
+
+                OutlinedTextFieldDefaults.DecorationBox(
+                    value = value,
+
+                    innerTextField = {
+                        Box(modifier = Modifier.fillMaxWidth().padding( end = if(iconButton != null) occupiedButtonSpace else 0.dp)) { // Добавляем отступы
+                            innerTextField()
+                        }
+                    },
+                    enabled = false,
+                    singleLine = true,
+                    interactionSource = interactionSource,
+                    visualTransformation = VisualTransformation.None,
+                    label = { if(label != null) Text(softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        text = label, color = colorResource(R.color.colorTextContainerColorCommonField)
+                    ) },
+                    container = {
+                        Container(
+                            modifier = Modifier.width(IntrinsicSize.Max).fillMaxWidth(),
+                            enabled = true,
+                            isError = false,
+                            interactionSource = interactionSource,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = colorResource(R.color.focusedContainerColorCommonField),
+                                unfocusedContainerColor = colorResource(R.color.unfocusedContainerColorCommonField),
+                                focusedTextColor = colorResource(R.color.colorTextContainerColorCommonField),
+                                unfocusedTextColor = colorResource(R.color.colorTextContainerColorCommonField),
+                                focusedBorderColor = colorResource(R.color.colorTextContainerColorCommonField),
+                                unfocusedBorderColor = colorResource(R.color.border_common_text_field_unfocused),
+                            ),
+                            shape = RoundedCornerShape(6.dp),
+                            focusedBorderThickness = 1.dp,
+                            unfocusedBorderThickness = 1.dp,
+                        )
+                    }
+                )
+
+                if(iconButton != null){
+                    Box(modifier.fillMaxHeight().wrapContentWidth().onGloballyPositioned { coordinates ->
+                        val width = with(localDensity) { coordinates.size.width.toDp() } - 15.dp
+                        occupiedButtonSpace = if (width < 0.dp) 0.dp else width
+                    }) {
+                        iconButton()
+                    }
+                }
             }
-        )
-    }
+
+
+        }
+
+
+
 }
