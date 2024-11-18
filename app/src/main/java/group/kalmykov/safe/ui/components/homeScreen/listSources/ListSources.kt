@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
@@ -34,11 +33,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,7 +46,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,7 +79,6 @@ import group.kalmykov.safe.entity.Source
 import group.kalmykov.safe.ui.components.homeScreen.buffer.rememberClipboardText
 import group.kalmykov.safe.ui.screens.HomeScreen
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
@@ -96,11 +90,32 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
 
     private var deleteSource: Source? by  mutableStateOf(null)
 
-    val selectedList: MutableList<Source> = mutableStateListOf()
+    val selectedList = mutableStateListOf<Source>()
 
 
     @Composable
     fun Show(){
+
+        if(editSource != null){
+            EditSourceDialog(
+                cancel = { editSource = null },
+                save = {source ->
+                    homeScreen.sourceRepository.update(source)
+                },
+                editSource!!
+            )
+        }
+
+        if (deleteSource != null) {
+            DeleteItemDialog(
+                successClick = {
+                    homeScreen.sourceRepository.delete(deleteSource!!.id)
+                    deleteSource = null
+                },
+                cancelClick = {
+                    deleteSource = null
+                })
+        }
 
         val infiniteTransition = rememberInfiniteTransition(label = "")
 
@@ -120,56 +135,12 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
             ), label = ""
         )
 
-
-
-
-        if(editSource != null){
-            EditSourceModal(
-                cancel = { editSource = null },
-                save = {source ->
-                    homeScreen.sourceRepository.update(source)
-                },
-                editSource!!
-            )
-        }
-
-
-        if (deleteSource != null) {
-            AlertDialog(
-                onDismissRequest = { deleteSource = null},
-                title = { Text(text = "Подтверждение действия") },
-                text = { Text("Вы действительно хотите удалить выбранный элемент?") },
-                confirmButton = {
-                    Row (modifier = Modifier.fillMaxWidth(),  horizontalArrangement = Arrangement.End){
-                        Button(
-                            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
-                            onClick = {deleteSource = null}
-                        ) {
-                            Text("Отменить", fontSize = 17.sp)
-                        }
-
-                        Button(
-                            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
-                            onClick = {
-                                homeScreen.sourceRepository.delete(deleteSource!!.id)
-                                deleteSource = null
-                            }
-                        ) {
-                            Text("Ok", fontSize = 17.sp)
-                        }
-                    }
-                }
-            )
-        }
-
         val sources by homeScreen.sourceRepository.getSourcesAndSortedEntities(homeScreen.searchComponent.search).collectAsState()
-
-
 
 
         LaunchedEffect(Unit) {
             launch {
-                delay(100)
+                delay(50)
                 if(sources.isNotEmpty()){
                     editSource = sources[0]
                 }
@@ -190,13 +161,20 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
 
     }
 
-    @Composable
-    fun SourceItemUi(source: Source, zIndex: Float, selectAnimatedColor: Color){
-        WrapperSourceItemUi(source = source, zIndex = zIndex, selectAnimatedColor = selectAnimatedColor)
+    private fun selectSource(source: Source){
+        if(selectedList.any{item -> item.id == source.id}){
+            if(selectedList.size == 1){
+                selectedList.clear()
+            }else{
+                selectedList.removeIf{item -> item.id == source.id}
+            }
+        }else{
+            selectedList.add(source)
+        }
     }
 
     @Composable
-    fun WrapperSourceItemUi(source: Source, zIndex: Float, selectAnimatedColor: Color){
+    fun SourceItemUi(source: Source, zIndex: Float, selectAnimatedColor: Color){
 
         var isSelectedCurrentItem by remember { mutableStateOf(selectedList.any{item -> item.id == source.id}) }
 
@@ -214,28 +192,22 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                 }
             }
 
-          SourceItemUiContent(source = source, isSelectedCurrentItem = isSelectedCurrentItem, selectAnimatedColor = selectAnimatedColor, onLongPress = {
-              selectedList.clear()
-              activeSource = null
-              selectedList.add(source)
-          })
+            SourceItemUIContent(
+                source = source,
+                isSelectedCurrentItem = isSelectedCurrentItem,
+                selectAnimatedColor = selectAnimatedColor,
+                onLongPress = {
+                    selectedList.clear()
+                    activeSource = null
+                    selectedList.add(source)
+                }
+            )
         }
     }
 
-    private fun selectSource(source: Source){
-        if(selectedList.any{item -> item.id == source.id}){
-            if(selectedList.size == 1){
-                selectedList.clear()
-            }else{
-                selectedList.removeIf{item -> item.id == source.id}
-            }
-        }else{
-            selectedList.add(source)
-        }
-    }
 
     @Composable
-    fun SourceItemUiContent(source: Source, isSelectedCurrentItem: Boolean, selectAnimatedColor: Color,onLongPress: () -> Unit){
+    fun SourceItemUIContent(source: Source, isSelectedCurrentItem: Boolean, selectAnimatedColor: Color, onLongPress: () -> Unit){
         var isSourceOpen by remember { mutableStateOf(false) }
 
         isSourceOpen = activeSource?.id == source.id
@@ -263,17 +235,17 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                    .pointerInput(source.id) {
                        detectTapGestures(
                            onTap = {
-                               if(selectedList.size == 0){
-                                   if (isSourceOpen){
-                                       activeSource = null
-                                   } else{
-                                       activeSource = source
-                                       dragNewHeightPx = 0f
-                                   }
-                               }else{
+                               if(selectedList.isNotEmpty()){
                                    selectSource(source)
+                                   return@detectTapGestures
                                }
 
+                               if (isSourceOpen){
+                                   activeSource = null
+                               } else{
+                                   activeSource = source
+                                   dragNewHeightPx = 0f
+                               }
                            },
                            onLongPress = {
                                onLongPress()
@@ -367,13 +339,17 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
     @Composable
     fun SourceContainerActive(source: Source){
 
-        var originalColumnHeightPx by remember { mutableFloatStateOf(0f) }
+        val heightPx = if(isStartDrag || dragNewHeightPx.toInt() > 0 ) dragNewHeightPx.toInt() else null
 
-        var passwordVisibility by  remember { mutableStateOf(false) }
+        var originalColumnHeightPx by remember { mutableFloatStateOf(0f) }
 
         var offsetY by remember { mutableFloatStateOf(0f) }
 
-        ContainerModalTop(modifier = Modifier, heightPx = if(isStartDrag || dragNewHeightPx.toInt() > 0 ) dragNewHeightPx.toInt() else null){
+        val height: Int? = if(heightPx != null)
+            if(heightPx > 0) heightPx else 0
+        else null
+
+        Layout(modifier = Modifier.zIndex(-1f), content = {
 
             Column(modifier = Modifier.onGloballyPositioned { coordinates ->
                 // Set column height using the LayoutCoordinates
@@ -409,139 +385,23 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
                         }
                 ) {
 
-
                     Column {
                         Column(modifier = Modifier
                             .background(color = colorResource(R.color.background_active_source_container))
                             .padding(start = 10.dp, top = 0.dp, end = 10.dp)
                         ) {
-                            InputContainer(label = "Username", inputField = {
-                                BasicTextField(
-                                    value = (source.username ?: ""),
-                                    singleLine = true,
-                                    onValueChange = {},
-                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                    readOnly = true,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Transparent),
-                                    //visualTransformation = visualTransformation,
-                                    //  keyboardOptions = keyboardOptions
-                                )
-                            }, attributes = {
-                                BtnCopy(value = source.username)
-                            })
-
-                            InputContainer(label = "Password", inputField = {
-                                BasicTextField(
-                                    value = source.password,
-                                    singleLine = true,
-                                    onValueChange = {},
-                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                    readOnly = true,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Transparent),
-                                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                                )
-                            }, attributes = {
-                                BtnShow(passwordVisibility) { passwordVisibility = it }
-                                BtnCopy(value = source.password)
-                            })
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(5.dp)
-                                    .clip(shape = RoundedCornerShape(5.dp))
-                                    .background(color = colorResource(R.color.background_field_resource))
-                                    .padding(13.dp, 30.dp, 13.dp, 15.dp)
-                            ) {
-
-                                Text(
-                                    text = "Description",
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        color = colorResource(R.color.color_label_field_resource)
-                                    ),
-                                    modifier = Modifier
-                                        .align(AbsoluteAlignment.TopLeft)
-                                        .offset(y = (-20).dp)
-                                )
-
-                                BasicTextField(
-                                    value = (if (source.description.isNullOrEmpty()) "Не примечаний" else source.description.toString()),
-                                    singleLine = false,
-                                    onValueChange = {},
-                                    textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-                                    readOnly = true,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Transparent)
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(5.dp, 10.dp, 5.dp, 10.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Button(
-                                    onClick = { editSource = source },
-                                    content = { Text("Изменить") })
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Button(
-                                    onClick = { deleteSource = source },
-                                    content = { Text("Удалить") }
-                                )
-                            }
+                            UsernameField(source)
+                            PasswordField(source)
+                            DescriptionField(source)
+                            TheBottomButtonsOfTheActiveContainer(source)
                         }
-                        Column(modifier = Modifier.clickable { activeSource = null }
-                        ){
-                            Box(
-                                modifier = Modifier
-                                    .width(30.dp)
-                                    .background(color = colorResource(R.color.background_active_source_container)),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Text(text = "}", color = colorResource(R.color.color_ellipsis_active))
-                            }
-                            Box(modifier = Modifier
-                                .fillMaxWidth()
-                                .height(25.dp)
-                                .background(Color.Gray),
-                                contentAlignment = Alignment.Center)
-                            {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.width(100.dp).fillMaxHeight()){
-                                    Column {
-                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                                        Spacer(Modifier.height(5.dp))
-                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                                        Spacer(Modifier.height(5.dp))
-                                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
-                                    }
-                                }
 
-                            }
-                        }
+                        BottomButtonToCloseTheActiveContainer()
                     }
-
                 }
 
             }
-        }
-    }
-
-    @Composable
-    fun ContainerModalTop(modifier: Modifier = Modifier, heightPx: Int? = null, content: @Composable () -> Unit) {
-
-        val height: Int? = if(heightPx != null)
-            if(heightPx > 0) heightPx else 0
-        else null
-
-        Layout(modifier = modifier.zIndex(-1f),content = content) { measurables, constraints ->
+        }) { measurables, constraints ->
 
             val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0, )
             var maxHeight = 0;
@@ -567,7 +427,139 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
         }
     }
 
+    /*UI SourceContainerActive*/
+    @Composable
+    fun UsernameField(source: Source){
+        InputContainer(label = "Username", inputField = {
+            BasicTextField(
+                value = (source.username ?: ""),
+                singleLine = true,
+                onValueChange = {},
+                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.Transparent),
+                //visualTransformation = visualTransformation,
+                //  keyboardOptions = keyboardOptions
+            )
+        }, attributes = {
+            BtnCopy(value = source.username)
+        })
+    }
 
+    @Composable
+    fun PasswordField(source: Source){
+
+        var passwordVisibility by  remember { mutableStateOf(false) }
+
+        InputContainer(label = "Password", inputField = {
+            BasicTextField(
+                value = source.password,
+                singleLine = true,
+                onValueChange = {},
+                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.Transparent),
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+        }, attributes = {
+            BtnShow(passwordVisibility) { passwordVisibility = it }
+            BtnCopy(value = source.password)
+        })
+    }
+
+    @Composable
+    fun DescriptionField(source: Source){
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .clip(shape = RoundedCornerShape(5.dp))
+                .background(color = colorResource(R.color.background_field_resource))
+                .padding(13.dp, 30.dp, 13.dp, 15.dp)
+        ) {
+
+            Text(
+                text = "Description",
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    color = colorResource(R.color.color_label_field_resource)
+                ),
+                modifier = Modifier
+                    .align(AbsoluteAlignment.TopLeft)
+                    .offset(y = (-20).dp)
+            )
+
+            BasicTextField(
+                value = (if (source.description.isNullOrEmpty()) "Не примечаний" else source.description.toString()),
+                singleLine = false,
+                onValueChange = {},
+                textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.Transparent)
+            )
+        }
+    }
+
+    @Composable
+     fun TheBottomButtonsOfTheActiveContainer(source: Source){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp, 10.dp, 5.dp, 10.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(
+                onClick = { editSource = source },
+                content = { Text("Изменить") })
+            Spacer(modifier = Modifier.width(5.dp))
+            Button(
+                onClick = { deleteSource = source },
+                content = { Text("Удалить") }
+            )
+        }
+     }
+
+    @Composable
+    fun BottomButtonToCloseTheActiveContainer(){
+        Column(modifier = Modifier.clickable { activeSource = null }
+        ){
+            Box(
+                modifier = Modifier
+                    .width(30.dp)
+                    .background(color = colorResource(R.color.background_active_source_container)),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Text(text = "}", color = colorResource(R.color.color_ellipsis_active))
+            }
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(25.dp)
+                .background(Color.Gray),
+                contentAlignment = Alignment.Center)
+            {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.width(100.dp).fillMaxHeight()){
+                    Column {
+                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                        Spacer(Modifier.height(5.dp))
+                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                        Spacer(Modifier.height(5.dp))
+                        HorizontalDivider(color = Color.Black, thickness = 2.dp)
+                    }
+                }
+
+            }
+        }
+    }
+    /*End UI SourceContainerActive*/
+
+    /*fun SourceContainerActive*/
     @Composable
     fun BtnShow(passwordVisibility : Boolean, setPasswordVisibility : (Boolean) -> Unit){
 
@@ -663,6 +655,6 @@ class ListSources(private val homeScreen: HomeScreen) : ViewModel() {
         }
 
     }
-
+    /*fun End SourceContainerActive*/
 
 }

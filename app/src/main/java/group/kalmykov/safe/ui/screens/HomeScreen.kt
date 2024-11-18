@@ -44,7 +44,7 @@ import group.kalmykov.safe.R
 import group.kalmykov.safe.dao.SourceDao
 import group.kalmykov.safe.repository.SourceRepository
 import group.kalmykov.safe.ui.components.homeScreen.buffer.Buffer
-import group.kalmykov.safe.ui.components.homeScreen.listSources.AddSourceModal
+import group.kalmykov.safe.ui.components.homeScreen.listSources.AddSourceDialog
 import group.kalmykov.safe.ui.components.homeScreen.listSources.ListSources
 import group.kalmykov.safe.ui.components.homeScreen.search.SearchComponent
 
@@ -143,7 +143,7 @@ class HomeScreen(sourceDao: SourceDao): ViewModel(){
 
         ){ innerPadding ->
             if(isOpenDialogAddSource){
-                AddSourceModal({ isOpenDialogAddSource = false }, { source -> sourceRepository.add(source)})
+                AddSourceDialog({ isOpenDialogAddSource = false }, { source -> sourceRepository.add(source)})
             }
 
            Box(

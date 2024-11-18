@@ -4,6 +4,6 @@ import androidx.compose.runtime.Composable
 import group.kalmykov.safe.entity.Source
 
 @Composable
-fun AddSourceModal(cancel: () -> Unit, save: (Source) -> Unit){
-    SourceFormModal(cancel = cancel, save = save)
+fun AddSourceDialog(cancel: () -> Unit, save: (Source) -> Unit){
+    SourceFormDialog(cancel = cancel, save = save)
 }
