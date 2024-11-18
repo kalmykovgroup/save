@@ -13,17 +13,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun BottomButtons(cancel: () -> Unit, ok: () -> Unit){
-    Row (modifier = Modifier.fillMaxWidth(),  horizontalArrangement = Arrangement.End){
+fun BottomButtonsCancelOk(cancel: () -> Unit, ok: () -> Unit){
+    Row (modifier = Modifier.fillMaxWidth().padding(top = 40.dp),  horizontalArrangement = Arrangement.End){
+
+
         Button(
-            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+            modifier = Modifier.padding(5.dp, 0.dp).fillMaxWidth().weight(1f), shape = RoundedCornerShape(5.dp),
             onClick = {cancel()}
         ) {
             Text("Отменить", fontSize = 17.sp)
         }
 
         Button(
-            modifier = Modifier.padding(5.dp, 0.dp), shape = RoundedCornerShape(5.dp),
+            modifier = Modifier.padding(5.dp, 0.dp).fillMaxWidth().weight(1f), shape = RoundedCornerShape(5.dp),
             onClick = { ok(); }
         ) {
             Text("Ок", fontSize = 17.sp)

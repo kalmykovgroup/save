@@ -1,4 +1,4 @@
-package group.kalmykov.safe.ui.components.homeScreen.listSources.generatePasswordDialog
+package group.kalmykov.safe.ui.components.homeScreen.listSources.generatePasswordDialog.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CastomSlider(setCountChar: (Int) -> Unit){
+fun CustomSlider(setCountChar: (Int) -> Unit){
 
     var sliderValue  by remember { mutableFloatStateOf(4f) }
 

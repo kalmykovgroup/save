@@ -93,6 +93,21 @@
 
     <!--password_generate -->
     <color name="password_generate">#4CAF50</color>
+    <color name="canvasBackgroundGeneratePassword">#1b1440</color>
+
+    <color name="canvas_color_level_1">#FA528E</color>
+    <color name="canvas_color_level_2">#F6A00C</color>
+    <color name="canvas_color_level_3">#33D298</color>
+
+    <!--Активная часть трека-->
+    <color name="active_part_track">#33D298</color>
+    <color name="not_active_part_track">#878787</color>
+    <color name="slider_holder">#FFFFFF</color>
+
+    <color name="generate_btn_background">#4c4d50</color>
+    <color name="generate_btn_text">#da8b50</color>
+    <color name="generate_btn_border">#da8b50</color>
+    <color name="generate_btn_icon">#da8b50</color>
 
 
 </resources>
