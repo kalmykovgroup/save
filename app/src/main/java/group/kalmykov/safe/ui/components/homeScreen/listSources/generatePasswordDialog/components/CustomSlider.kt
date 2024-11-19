@@ -25,11 +25,11 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomSlider(setCountChar: (Int) -> Unit){
+fun CustomSlider(setCountChar: (Int) -> Unit, min: Float, max: Float){
 
-    var sliderValue  by remember { mutableFloatStateOf(4f) }
+    var sliderValue  by remember { mutableFloatStateOf(min) }
 
-    val valueRange = 4f..64f
+    val valueRange = min..max
 
     Slider(
         value = sliderValue ,
