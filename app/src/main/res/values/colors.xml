@@ -28,6 +28,7 @@
     <color name="border_field_input_unfocused">#1F1F1F</color>
     <color name="border_common_text_field_focused">#1F1F1F</color>
     <color name="border_common_text_field_unfocused">#1F1F1F</color>
+    <color name="border_right_btn_common_text_field">#46474A</color>
     <color name="eye_background">#7AB0C5AB</color>
     <color name="show_background">#7AF8EB99</color>
     <color name="delete_background">#7AB88080</color>
@@ -45,7 +46,6 @@
      <color name="anim_border_color5">#00DB29</color>
      <color name="anim_border_color6">#4949E6</color>
     <!--end-->
-
 
     <color name="background_item_source">#18191d</color>
     <color name="color_source_name">#2aaefe</color>
@@ -67,7 +67,8 @@
     <color name="focusedContainerColorCommonField">#4c4d50</color>
     <color name="unfocusedContainerColorCommonField">#4c4d50</color>
     <color name="colorTextContainerColorCommonField">#da8b50</color>
-    <color name="dataContainerColorCommonField">#2aaefe</color>
+    <!--<color name="dataContainerColorCommonField">#FDFDFD</color> -->
+    <color name="dataContainerColorCommonField">#FFFFFF</color>
 
     <!--welcome -->
 

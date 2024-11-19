@@ -25,7 +25,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,16 +60,16 @@ fun GeneratePasswordDialog(save: (String) -> Unit, close: () -> Unit){
 
     var password by remember { mutableStateOf("") }
 
-    var length by remember { mutableIntStateOf(4) }
+    val maxLength = 65f
+    val minLength = 4f
+
+    var length by remember { mutableIntStateOf(minLength.toInt()) }
+
 
     var isUpperCaseLetters by remember { mutableStateOf(true) }
     var isNumbers by remember { mutableStateOf(true) }
     var isSymbols by remember { mutableStateOf(true) }
 
-    val context = LocalContext.current
-
-    val clipBoardText by rememberClipboardText()
-    val enabled = password.isNotEmpty()
 
     MyCustomDialog(
         onDismissRequest = {close()},
@@ -108,119 +108,24 @@ fun GeneratePasswordDialog(save: (String) -> Unit, close: () -> Unit){
                         }
                     }
 
-                    Box(modifier = Modifier
-                        .width(40.dp)
-                        .height(80.dp) , contentAlignment = Alignment.Center){
-
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clickable(
-                                onClick = {
-                                    val clipboardManager =
-                                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clipboardManager.setPrimaryClip(
-                                        ClipData.newPlainText(
-                                            "text",
-                                            password
-                                        )
-                                    )
-                                    vibrator(context, milliseconds = 100)
-                                }, enabled = enabled && clipBoardText.toString() != password
-                            )
-                            , contentAlignment = Alignment.Center
-                        ){
-                            Image(
-                                imageVector = ImageVector.vectorResource(if(clipBoardText.toString() != password) R.drawable.copy else R.drawable.ok),
-                                contentDescription = "copy",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(23.dp),
-                                colorFilter = ColorFilter.tint(colorResource(
-                                    if(enabled)
-                                        if(clipBoardText.toString() == password) R.color.ok
-                                        else R.color.btn_copy_active
-
-                                    else R.color.btn_copy_enactive)
-                                )
-                            )
-                        }
-                    }
-
+                    BoxBtnCopy(password)
                 }
 
                 Text(text = "$length символов", color = Color.White)
 
-                CustomSlider(setCountChar = { length = it })
+                CustomSlider(setCountChar = { length = it }, min = minLength, max = maxLength)
 
-               Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
-                   Checkbox(
-                       checked = isUpperCaseLetters,
-                       onCheckedChange = { isUpperCaseLetters = it }
-                   )
+                RowUpperCaseLetters(isUpperCaseLetters, { isUpperCaseLetters = it })
+                RowNumbers(isNumbers, {isNumbers = it})
+                RowSymbols(isSymbols, {isSymbols = it})
 
-                   Box(modifier = Modifier.weight(1f)){
-                       Text(text = "Заглавные буквы" , color = Color.White)
-                   }
-
-                   Text(text = "ABC", color = colorResource(id = R.color.canvas_color_level_1))
-               }
-
-               Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
-                   Checkbox(
-                       checked = isNumbers,
-                       onCheckedChange = { isNumbers = it }
-                   )
-
-                   Box(modifier = Modifier.weight(1f)){
-                       Text(text = "Цифры" , color = Color.White)
-                   }
-
-                   Text(text = "123", color = colorResource(id = R.color.canvas_color_level_2))
-               }
-
-               Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
-                   Checkbox(
-                       checked = isSymbols,
-                       onCheckedChange = { isSymbols = it }
-                   )
-
-                   Box(modifier = Modifier.weight(1f)){
-                       Text(text = "Символы", color = Color.White)
-                   }
-
-                   Text(text = "!&*", color = colorResource(id = R.color.canvas_color_level_3))
-               }
-
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .clip(shape = RoundedCornerShape(5.dp))
-                    .background(colorResource(R.color.generate_btn_background))
-                    .border(
-                        width = 1.dp,
-                        color = colorResource(R.color.generate_btn_border),
-                        shape = RoundedCornerShape(5.dp)
+                BoxGenerateButton{
+                    password = generatePassword(
+                        length = length,
+                        includeUpperCase = isUpperCaseLetters,
+                        includeNumbers = isNumbers,
+                        includeSymbols = isSymbols
                     )
-                    .clickable {
-                        password = generatePassword(
-                            length = length,
-                            includeUpperCase = isUpperCaseLetters,
-                            includeNumbers = isNumbers,
-                            includeSymbols = isSymbols
-                        )
-                    }
-                    , contentAlignment = Alignment.Center){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Image(
-                            imageVector = ImageVector.vectorResource(R.drawable.generate),
-                            contentDescription = "",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.width(23.dp),
-                            colorFilter = ColorFilter.tint(colorResource(R.color.generate_btn_icon))
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(text = "Сгенерировать новый", style = TextStyle(color = colorResource(R.color.generate_btn_text)))
-                    }
                 }
 
                 BottomButtonsCancelOk(cancel = {
@@ -232,6 +137,127 @@ fun GeneratePasswordDialog(save: (String) -> Unit, close: () -> Unit){
             }
         }
     )
+}
+
+@Composable
+fun BoxBtnCopy(password: String){
+    val context = LocalContext.current
+    val clipBoardText by rememberClipboardText()
+
+    Box(modifier = Modifier
+        .width(40.dp)
+        .height(80.dp) , contentAlignment = Alignment.Center){
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clickable(
+                onClick = {
+                    val clipboardManager =
+                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboardManager.setPrimaryClip(
+                        ClipData.newPlainText(
+                            "text",
+                            password
+                        )
+                    )
+                    vibrator(context, milliseconds = 100)
+                }, enabled = password.isNotEmpty() && clipBoardText.toString() != password
+            )
+            , contentAlignment = Alignment.Center
+        ){
+            Image(
+                imageVector = ImageVector.vectorResource(if(clipBoardText.toString() != password) R.drawable.copy else R.drawable.ok),
+                contentDescription = "copy",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.width(23.dp),
+                colorFilter = ColorFilter.tint(colorResource(
+                    if(password.isNotEmpty())
+                        if(clipBoardText.toString() == password) R.color.ok
+                        else R.color.btn_copy_active
+
+                    else R.color.btn_copy_enactive)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun RowUpperCaseLetters(isUpperCaseLetters: Boolean, setIsUpperCaseLetters: (Boolean) -> Unit){
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
+        Checkbox(
+            checked = isUpperCaseLetters,
+            onCheckedChange = setIsUpperCaseLetters
+        )
+
+        Box(modifier = Modifier.weight(1f)){
+            Text(text = "Заглавные буквы" , color = Color.White)
+        }
+
+        Text(text = "ABC", color = colorResource(id = R.color.canvas_color_level_1))
+    }
+}
+@Composable
+fun RowNumbers(isNumbers: Boolean, setIsNumbers: (Boolean) -> Unit){
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
+        Checkbox(
+            checked = isNumbers,
+            onCheckedChange = setIsNumbers
+        )
+
+        Box(modifier = Modifier.weight(1f)){
+            Text(text = "Цифры" , color = Color.White)
+        }
+
+        Text(text = "123", color = colorResource(id = R.color.canvas_color_level_2))
+    }
+}
+
+@Composable
+fun RowSymbols(isSymbols: Boolean, setIsSymbols: (Boolean) -> Unit){
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 15.dp)){
+        Checkbox(
+            checked = isSymbols,
+            onCheckedChange = setIsSymbols
+        )
+
+        Box(modifier = Modifier.weight(1f)){
+            Text(text = "Символы", color = Color.White)
+        }
+
+        Text(text = "!&*", color = colorResource(id = R.color.canvas_color_level_3))
+    }
+}
+
+@Composable
+fun BoxGenerateButton(click: () -> Unit){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(60.dp)
+        .clip(shape = RoundedCornerShape(5.dp))
+        .background(colorResource(R.color.generate_btn_background))
+        .border(
+            width = 1.dp,
+            color = colorResource(R.color.generate_btn_border),
+            shape = RoundedCornerShape(5.dp)
+        )
+        .clickable {
+            click()
+        }
+        , contentAlignment = Alignment.Center){
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Image(
+                imageVector = ImageVector.vectorResource(R.drawable.generate),
+                contentDescription = "",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.width(23.dp),
+                colorFilter = ColorFilter.tint(colorResource(R.color.generate_btn_icon))
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(text = "Сгенерировать новый", style = TextStyle(color = colorResource(R.color.generate_btn_text)))
+        }
+    }
 }
 
 
