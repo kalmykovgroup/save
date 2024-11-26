@@ -110,5 +110,6 @@
     <color name="generate_btn_border">#da8b50</color>
     <color name="generate_btn_icon">#da8b50</color>
 
-
+    <!--common-->
+    <color name="orange">#da8b50</color>
 </resources>
