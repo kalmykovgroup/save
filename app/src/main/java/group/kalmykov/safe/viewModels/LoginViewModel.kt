@@ -1,41 +1,47 @@
 package group.kalmykov.safe.viewModels
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import group.kalmykov.safe.functions.vibrator
-import group.kalmykov.safe.ui.screens.LoginScreen
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import group.kalmykov.safe.navigation.Destinations
+import group.kalmykov.safe.ui.components.vibrator
+import group.kalmykov.safe.navigation.NavGraphViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-import androidx.fragment.app.FragmentActivity
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+class LoginViewModel(private val context: Context, private val navGraphViewModel: NavGraphViewModel): ViewModel() {
 
-
-class LoginViewModel(private val callbackOnSuccessfulLogin: () -> Unit, private val mainViewModel: MainViewModel, context: Context) : ViewModel() {
+    private val isFirstLaunchFlagKey = "isFirstLaunch"
 
     private val passwordFileName = "secure_prefs"
     private val passwordKeyName = "encrypted_password"
 
-    var currentIndex = 0
-    private var isPasswordLogin = false
+    var isMethodPasswordLogin = false
     var isSuccess: Boolean? by mutableStateOf(null)
 
     var supportsBiometrics by  mutableStateOf(false)
+
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val sharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        passwordFileName,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     init{
         val biometricManager = BiometricManager.from(context)
@@ -48,64 +54,32 @@ class LoginViewModel(private val callbackOnSuccessfulLogin: () -> Unit, private 
         }
     }
 
+    fun isFirstLogin(): Boolean {//Проверяем что это не первый вход
+        return sharedPreferences.getBoolean(isFirstLaunchFlagKey, true)
+    }
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
 
-    val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        passwordFileName,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    @Composable
-    fun ShowScreen(){
-        val context = LocalContext.current as FragmentActivity
-
-        LoginScreen(this) {authenticate(context) }
-
-        if(supportsBiometrics && !isPasswordLogin && isSuccess != true){
-            authenticate(context)
+    //Метод обработки обычного успешного входа в систему
+    private fun successfulLogin(){
+        navGraphViewModel.navController.navigate(Destinations.Home.route){
+            popUpTo(Destinations.Login.route) { inclusive = true }
         }
     }
 
 
-    fun singIn(pin : String, context: Context): Boolean {
-
-        val pass = sharedPreferences.getString(passwordKeyName, null)
-
-        if(pass == null){
-            mainViewModel.restartApp()
-
-            return false
-        }
-
-       if(pin != pass){
-           vibrator(context)
-
-           viewModelScope.launch(Dispatchers.Main) {
-               isSuccess = false
-               delay(300)
-               isSuccess = null
-           }
-           return false
-       }
-
-       isSuccess = true
-
-       viewModelScope.launch(Dispatchers.Main) {
-           delay(300)
-           callbackOnSuccessfulLogin()
-       }
-       return true
+    //метод вызывается при успешном первом входе (успешное создание пароля для входа)
+    fun successfulFirstLogin(){
+        sharedPreferences.edit().putBoolean(isFirstLaunchFlagKey, false).apply()
     }
 
+    //Метод для сохранения пароля
+    fun saveEncryptedPassword(password: String) {
+        sharedPreferences.edit().putString(passwordKeyName, password).apply()
+    }
 
-
-    private fun authenticate(context: FragmentActivity) {
+    //Вызываем метод когда нам нужно вызвать диалогое окно для входа по отпечатку
+    fun authenticate() {
+        val context: FragmentActivity = context as FragmentActivity
 
         val executor = context.mainExecutor
         val biometricPrompt = BiometricPrompt(
@@ -122,7 +96,7 @@ class LoginViewModel(private val callbackOnSuccessfulLogin: () -> Unit, private 
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {//Ошибка при аутентификации
-                    isPasswordLogin = true
+                    isMethodPasswordLogin = true
                 }
 
                 override fun onAuthenticationFailed() {//Не удалось пройти аутентификацию
@@ -139,11 +113,33 @@ class LoginViewModel(private val callbackOnSuccessfulLogin: () -> Unit, private 
         biometricPrompt.authenticate(promptInfo)
     }
 
+    fun singIn(pin : String, context: Context): Boolean {
 
-    fun saveEncryptedPassword(password: String) {
-        sharedPreferences.edit().putString(passwordKeyName, password).apply()
+        val pass = sharedPreferences.getString(passwordKeyName, null)
+
+        if(pass == null){
+           // mainViewModel.restartApp()
+
+            return false
+        }
+
+        if(pin != pass){
+            vibrator(context)
+
+            viewModelScope.launch(Dispatchers.Main) {
+                isSuccess = false
+                delay(300)
+                isSuccess = null
+            }
+            return false
+        }
+
+        isSuccess = true
+
+        viewModelScope.launch(Dispatchers.Main) {
+            delay(300)
+            successfulLogin()
+        }
+        return true
     }
-
-
-
 }
