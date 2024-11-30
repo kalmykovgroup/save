@@ -4,12 +4,17 @@ package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.dra
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
@@ -74,18 +79,16 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.Content
+import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.sourceInfoDialog.components.Content
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 
-@SuppressLint("UseOfNonLambdaOffsetOverload", "UnrememberedMutableState",
-    "CoroutineCreationDuringComposition", "SuspiciousIndentation"
-)
+
+@SuppressLint("RememberReturnType", "SuspiciousIndentation")
 @Composable
 fun DraggableBox(source: Source, isOpen: MutableState<Boolean>, homeViewModel: HomeViewModel) {
-
 
     var heightIntParentBlock by remember { mutableStateOf<Int?>(null) }
 
@@ -111,45 +114,47 @@ fun DraggableBox(source: Source, isOpen: MutableState<Boolean>, homeViewModel: H
         finishedListener = { }
     )
 
-        //Layout нам нужен для подсчета высоты занимаемого контента
-        Layout(modifier = Modifier.zIndex(-1f), content = {
-            Box(modifier = Modifier.pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { isStartDrag = true },
-                    onDragEnd = {
-                        isStartDrag = false
-                        if(offsetFloatY < 0){
-                            isOpen.value = false
+
+            //Layout нам нужен для подсчета высоты занимаемого контента
+            Layout(modifier = Modifier.zIndex(-1f), content = {
+                Box(modifier = Modifier.pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { isStartDrag = true },
+                        onDragEnd = {
+                            isStartDrag = false
+                            if(offsetFloatY < 0){
+                                isOpen.value = false
+                            }
+                            offsetFloatY = 0f
+
+                        },
+                        onDrag = { change, _ ->
+                            val dragAmount = change.positionChange().y
+                            offsetFloatY += dragAmount
+                            if (change.positionChange() != Offset.Zero) change.consume()
                         }
-                        offsetFloatY = 0f
-
-                    },
-                    onDrag = { change, _ ->
-                        val dragAmount = change.positionChange().y
-                        offsetFloatY += dragAmount
-                        if (change.positionChange() != Offset.Zero) change.consume()
-                    }
-                )
-            }){
-                Content(source, homeViewModel)
-            }
-        }) { measurables, constraints ->
-            val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-
-           val listPlaceable = measurables.map { measurable -> measurable.measure(looseConstraints)}
-
-            if(heightIntParentBlock == null){
-                heightIntParentBlock = listPlaceable[0].height
-            }
-
-            layout(width = constraints.maxWidth, height = animatedStateHeight) {
-                listPlaceable.forEach { placeable ->
-                    placeable.placeRelative(x = 0, y = animatedStateHeight - placeable.height)
+                    )
+                }){
+                    Content(source, homeViewModel)
                 }
-            }
-        }
+            }) { measurables, constraints ->
+                val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+
+                val listPlaceable = measurables.map { measurable -> measurable.measure(looseConstraints)}
+
+                if(heightIntParentBlock == null){
+                    heightIntParentBlock = listPlaceable[0].height
+                }
+
+                layout(width = constraints.maxWidth, height = animatedStateHeight) {
+                    listPlaceable.forEach { placeable ->
+                        placeable.placeRelative(x = 0, y = animatedStateHeight - placeable.height)
+                    }
+                }
 
 
+
+    }
 
 
 }

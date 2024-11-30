@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(context: Context, navGraphViewModel: NavGraphViewModel): ViewModel() {
     private val _query = MutableStateFlow("")
     private val _sortOrder = MutableStateFlow(SortOrder.DESCENDING)
@@ -36,20 +38,50 @@ class HomeViewModel(context: Context, navGraphViewModel: NavGraphViewModel): Vie
     private val sourceDao = navGraphViewModel.db.sourceDao()
     private val sourceRepository: SourceRepository = SourceRepository(sourceDao)
 
+    private val _items = MutableStateFlow<List<Source>>(emptyList())
+
+    val sources: StateFlow<List<Source>> = _items
+
+    // Состояние для управления прокруткой
+    // StateFlow для хранения индекса прокрутки
+    private val _scrollToIndex = MutableStateFlow<Int?>(null)
+    val scrollToIndex: StateFlow<Int?> = _scrollToIndex.asStateFlow()
+
+    // Метод для установки индекса прокрутки
+    fun scrollToIndex(index: Int) {
+        _scrollToIndex.value = index
+    }
+
+    // Сбрасываем индекс после прокрутки
+    fun onScrollCompleted() {
+        _scrollToIndex.value = null
+    }
+
+    init {
+        viewModelScope.launch {
+            _query.flatMapLatest { query ->
+                sourceRepository.all(query)
+            }.collect { itemList ->
+                _items.value = itemList
+            }
+        }
+    }
+
+
   /*  @OptIn(ExperimentalCoroutinesApi::class)
     val sources: Flow<PagingData<Source>> = combine(query, sortOrder) { query, sortOrder ->
         sourceRepository.getSources(query, sortOrder)
     }.flatMapLatest { it }
         .cachedIn(viewModelScope)*/
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+   /* @OptIn(ExperimentalCoroutinesApi::class)
     val items = _query.flatMapLatest { query ->
         Pager(PagingConfig(pageSize = 20)) {
-            sourceRepository.getItems(query)
+            sourceRepository.all(query)
         }.flow.cachedIn(viewModelScope)
     }.stateIn(viewModelScope, SharingStarted.Lazily, PagingData.empty())
         .cachedIn(viewModelScope)
-
+*/
     fun updateQuery(newQuery: String) {
         _query.value = newQuery
     }

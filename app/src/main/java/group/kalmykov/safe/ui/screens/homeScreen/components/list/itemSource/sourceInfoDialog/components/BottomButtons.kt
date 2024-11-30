@@ -1,4 +1,4 @@
-package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.footer
+package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.sourceInfoDialog.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -33,7 +33,8 @@ fun BottomButtons(source: Source, homeViewModel: HomeViewModel) {
         visual = visualEditSourceModal,
         setVisual = { visualEditSourceModal = it },
         save = { homeViewModel.updateSource(it) },
-        source = source
+        source = source,
+        homeViewModel
     )
 
 
