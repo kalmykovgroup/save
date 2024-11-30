@@ -112,4 +112,7 @@
 
     <!--common-->
     <color name="orange">#da8b50</color>
+
+    <!--Edit dialog-->
+    <color name="delete_icon_color">#4CAF50</color>
 </resources>

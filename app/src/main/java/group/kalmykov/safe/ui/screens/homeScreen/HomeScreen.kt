@@ -1,37 +1,15 @@
-package group.kalmykov.safe.ui.screens
+package group.kalmykov.safe.ui.screens.homeScreen
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -44,16 +22,14 @@ import group.kalmykov.safe.ui.screens.homeScreen.components.FloatingActionButton
 import group.kalmykov.safe.ui.screens.homeScreen.components.Search
 import group.kalmykov.safe.ui.screens.homeScreen.components.TopAppBarContainer
 import group.kalmykov.safe.ui.screens.homeScreen.components.buffer.Buffer
-import group.kalmykov.safe.ui.screens.homeScreen.components.dialog.AddSourceDialog
 import group.kalmykov.safe.ui.screens.homeScreen.components.list.ListSources
 import group.kalmykov.safe.viewModels.HomeViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel){
 
-
-    Scaffold(
+   Scaffold(
         topBar = { TopAppBarContainer() } ,
         floatingActionButton = { FloatingActionButtonContainer(homeViewModel) },
         bottomBar = { BottomBarContainer(homeViewModel)}
@@ -65,7 +41,6 @@ fun HomeScreen(homeViewModel: HomeViewModel){
                 .fillMaxSize()
                 .background(color = colorResource(R.color.background_home_screen)), contentAlignment = Alignment.TopStart
         ) {
-
             Column {
                 Search(homeViewModel)
 

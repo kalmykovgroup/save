@@ -1,18 +1,17 @@
-package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.inputs
+package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.sourceInfoDialog.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.AbsoluteAlignment
@@ -22,28 +21,31 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import group.kalmykov.safe.R
-import group.kalmykov.safe.data.entity.Source
-import group.kalmykov.safe.ui.components.BtnCopy
-import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.InputContainer
-
 
 @Composable
-fun DescriptionField(source: Source){
+fun InputContainer(label: String, attributes : @Composable () -> Unit, text: String, visualText: Boolean = true){
+
 
     Row(modifier = Modifier
-        .padding(5.dp)
+        .padding(0.dp, 5.dp)
         .clip(shape = RoundedCornerShape(5.dp))
-        .background(color = colorResource(R.color.background_field_resource)),
-        verticalAlignment = Alignment.Top
+        .background(color = colorResource(R.color.background_field_resource))
+        .height(60.dp)
+        .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(5.dp))
+        .padding(start = 10.dp, top = 3.dp, bottom = 3.dp),
+        verticalAlignment = Alignment.Bottom
     ){
         Box(modifier = Modifier
             .weight(1f)
-            .padding(start = 10.dp, top = 3.dp, bottom = 3.dp)){
+            .fillMaxHeight()){
 
-            Text(text = "Description" ,
+            Text(text = label ,
                 style = TextStyle( fontSize = 12.sp, color = colorResource(R.color.color_label_field_resource)),
                 modifier = Modifier
                     .align(AbsoluteAlignment.TopLeft)
@@ -51,17 +53,23 @@ fun DescriptionField(source: Source){
             )
 
             Box(modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 100.dp).padding(top = 15.dp)){
+                .fillMaxWidth().fillMaxHeight().padding(top = 10.dp), contentAlignment = Alignment.CenterStart){
+
+                val scrollState = rememberScrollState()
 
                 Text(
-                    text = source.description?: "",
+                    text = if(visualText) text else "*".repeat(text.length),
                     color = colorResource(R.color.color_value_field_resource),
-                    fontSize = 16.sp,
+                    style = TextStyle(fontSize = 16.sp, fontWeight = if(visualText) FontWeight.Normal else FontWeight.Bold),
+                    modifier = Modifier
+                        .horizontalScroll(scrollState),
                 )
 
             }
         }
-        BtnCopy(value = source.description)
+        Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically){
+            attributes()
+        }
+
     }
 }

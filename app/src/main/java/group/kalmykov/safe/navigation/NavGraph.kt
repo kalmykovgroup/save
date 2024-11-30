@@ -11,7 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import group.kalmykov.safe.data.db.AppDatabase
 import group.kalmykov.safe.ui.screens.AboutScreen
 import group.kalmykov.safe.ui.screens.CreatePasswordScreen
-import group.kalmykov.safe.ui.screens.HomeScreen
+import group.kalmykov.safe.ui.screens.homeScreen.HomeScreen
 import group.kalmykov.safe.ui.screens.firstLoginScreen.FirstLoginScreen
 import group.kalmykov.safe.ui.screens.loginScreen.LoginScreen
 import group.kalmykov.safe.viewModels.AboutViewModel

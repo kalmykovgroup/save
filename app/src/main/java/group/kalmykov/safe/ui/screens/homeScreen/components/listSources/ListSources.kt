@@ -17,7 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import group.kalmykov.safe.entity.Source
-import group.kalmykov.safe.ui.screens.HomeScreen
+import group.kalmykov.safe.ui.screens.homeScreen.HomeScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

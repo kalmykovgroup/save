@@ -1,4 +1,4 @@
-package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.inputs
+package group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.sourceInfoDialog.components.inputs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,30 +20,13 @@ import group.kalmykov.safe.R
 import group.kalmykov.safe.data.entity.Source
 import group.kalmykov.safe.ui.components.BtnCopy
 import group.kalmykov.safe.ui.components.BtnPassVisible
-import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.components.InputContainer
+import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.sourceInfoDialog.components.InputContainer
 
 @Composable
 fun PasswordField(source: Source){
 
     var passwordVisibility by  remember { mutableStateOf(false) }
 
-   /* InputContainer(label = "Password", inputField = {
-        BasicTextField(
-            value = source.password,
-            singleLine = true,
-            onValueChange = {},
-            textStyle = TextStyle(color = colorResource(R.color.color_value_field_resource)),
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color.Transparent),
-            visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-    }, attributes = {
-        BtnPassVisible(passwordVisibility) { passwordVisibility = it }
-        BtnCopy(value = source.password)
-    })*/
 
     InputContainer(
         label = "Password",

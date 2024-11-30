@@ -18,16 +18,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -39,8 +45,8 @@ import androidx.compose.ui.zIndex
 import group.kalmykov.safe.R
 
 import group.kalmykov.safe.data.entity.Source
+import group.kalmykov.safe.ui.screens.homeScreen.components.dialog.EditSourceDialog
 import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.components.SourceCheckbox
-import group.kalmykov.safe.ui.screens.homeScreen.components.list.itemSource.draggableBox.DraggableBox
 import group.kalmykov.safe.viewModels.HomeViewModel
 import kotlinx.coroutines.launch
 
@@ -51,18 +57,24 @@ fun SourceItem(source: Source, zIndex: Float, height: Dp, homeViewModel: HomeVie
 
     //Если установлен режим массового выбора и выбран текущий source, (проверяем на то, что он находится в списке выбранных
     val isSelected = remember { mutableStateOf(homeViewModel.isSelectedMode && homeViewModel.listSelectedSources.any{source.id == it.id}) }
-
     val coroutineScope = rememberCoroutineScope()
 
     //Если открыт выезающий блок подробной информации
     val isOpen = remember { mutableStateOf(false) }
 
+    EditSourceDialog(
+        visual = isOpen.value,
+        setVisual = { isOpen.value = it },
+        save = { homeViewModel.updateSource(it) },
+        source = source,
+        homeViewModel = homeViewModel
+    )
+
     Row(modifier = Modifier.zIndex(zIndex)){
 
         SourceCheckbox(source, isSelected, homeViewModel)
 
-        Column{
-            Row(modifier = Modifier
+        Column{  Row(modifier = Modifier
                 .zIndex(1f)
                 .fillMaxWidth()
                 .height(height)
@@ -128,7 +140,8 @@ fun SourceItem(source: Source, zIndex: Float, height: Dp, homeViewModel: HomeVie
                 }
 
 
-                Box(modifier = Modifier.width(50.dp), contentAlignment = Alignment.CenterEnd){
+                Box(modifier = Modifier.width(50.dp)
+                    , contentAlignment = Alignment.CenterEnd){
                     Row(modifier = Modifier
                         .fillMaxHeight()
                         .background(
@@ -165,9 +178,6 @@ fun SourceItem(source: Source, zIndex: Float, height: Dp, homeViewModel: HomeVie
                 }
             }
 
-
-            //Это блок подробной информации
-            DraggableBox(source, isOpen, homeViewModel)
 
             HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.divider_row_source))
         }

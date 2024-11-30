@@ -40,108 +40,59 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.*
-import androidx.compose.ui.unit.*
-import androidx.paging.LoadState
-import androidx.paging.compose.*
-import group.kalmykov.safe.data.entity.Source
-import kotlinx.coroutines.flow.Flow
+import androidx.compose.ui.geometry.Rect
 
 
 @Composable
 fun ListSources(homeViewModel: HomeViewModel) {
     //val lazyPagingItems = homeViewModel.sources.collectAsLazyPagingItems()
 
-    val lazyPagingItems = homeViewModel.items.collectAsLazyPagingItems()
+    val sources = homeViewModel.sources.collectAsState()
 
     val listState = rememberLazyListState()
     val itemHeight = 50.dp
     var availableHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
 
-    val sortOrder by homeViewModel.sortOrder.collectAsState()
+    val scrollToIndex by homeViewModel.scrollToIndex.collectAsState()
 
     Box(modifier = Modifier
-        .fillMaxSize()
         .onGloballyPositioned {
             availableHeight = with(density) { it.size.height.toDp() }
         }
     ) {
-        when (val refreshState = lazyPagingItems.loadState.refresh) {
-            is LoadState.Loading -> {
-                // Отображение индикатора загрузки при начальной загрузке данных
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center)
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            is LoadState.Error -> {
-                // Отображение сообщения об ошибке при неудачной начальной загрузке
-                val error = refreshState.error
-                Text(
-                    text = "Ошибка: ${error.message}",
-                    modifier = Modifier.fillMaxSize(),
-                    textAlign = TextAlign.Center
+        LazyColumn(
+            state = listState
+        ) {
+
+            itemsIndexed(
+                items = sources.value,
+                key = {_, source, -> source.id }
+            ) { index, source ->
+
+                SourceItem(
+                    source = source,
+                    zIndex = sources.value.size - index.toFloat(),
+                    height = itemHeight,
+                    homeViewModel = homeViewModel
                 )
+
             }
-            is LoadState.NotLoading -> {
-                // Отображение списка после загрузки данных
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    state = listState
-                ) {
 
-                    items(count = lazyPagingItems.itemCount, key = lazyPagingItems.itemKey { it.id }) { index ->
+            item { // Добавлен элемент в конце
+                Spacer(modifier = Modifier.height(availableHeight - itemHeight).fillMaxWidth())
+            }
 
-                        val item = lazyPagingItems[index]
 
-                        if (item != null) {
+        }
 
-                            ItemRow(item = item,
-                                zIndex = lazyPagingItems.itemCount - index.toFloat(),
-                                itemHeight = itemHeight,
-                                homeViewModel = homeViewModel)
 
-                        } else {
-                            Box(modifier = Modifier.fillMaxWidth().height(itemHeight), contentAlignment = Alignment.Center){
-                                // Отображение состояния загрузки
-                                CircularProgressIndicator(modifier = Modifier.fillMaxWidth())
-                            }
-                        }
-
-                    }
-
-                    item { // Добавлен элемент в конце
-                        Spacer(modifier = Modifier.height(availableHeight - itemHeight).fillMaxWidth())
-                    }
-
-                    // Обработка состояния загрузки при добавлении данных
-                    if (lazyPagingItems.loadState.append is LoadState.Loading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    } else if (lazyPagingItems.loadState.append is LoadState.Error) {
-                        item {
-                            val error = (lazyPagingItems.loadState.append as LoadState.Error).error
-                            Text(
-                                text = "Ошибка: ${error.message}",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
+        // Наблюдаем за изменением scrollToIndex и выполняем прокрутку
+        LaunchedEffect(scrollToIndex) {
+            scrollToIndex?.let { index ->
+                if (index in sources.value.indices) {
+                    listState.animateScrollToItem(index)
+                    homeViewModel.onScrollCompleted()
                 }
             }
         }
@@ -149,25 +100,4 @@ fun ListSources(homeViewModel: HomeViewModel) {
 
 }
 
-@Composable
-fun ItemRow(item: Source, zIndex: Float, itemHeight: Dp, homeViewModel: HomeViewModel) {
-    var visible by remember { mutableStateOf(true) }
 
-    LaunchedEffect(key1 = item) {
-        visible = true
-    }
-
-    AnimatedVisibility(
-        modifier = Modifier.zIndex(zIndex),
-        visible = visible,
-        exit = fadeOut() + shrinkVertically(),
-        content = {
-            SourceItem(
-                source = item,
-                zIndex = zIndex,
-                height = itemHeight,
-                homeViewModel = homeViewModel
-            )
-        }
-    )
-}

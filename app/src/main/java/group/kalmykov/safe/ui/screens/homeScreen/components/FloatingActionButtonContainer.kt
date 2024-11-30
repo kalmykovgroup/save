@@ -15,12 +15,16 @@ import group.kalmykov.safe.viewModels.HomeViewModel
 @Composable
 fun FloatingActionButtonContainer(homeViewModel: HomeViewModel){
 
-
     var isOpenDialogAddSource by remember { mutableStateOf(false) }
 
-
     if(isOpenDialogAddSource){
-        AddSourceDialog({ isOpenDialogAddSource = false }, { source -> homeViewModel.addSource(source)})
+        AddSourceDialog({ isOpenDialogAddSource = false },
+            save  = {
+                homeViewModel.addSource(it)
+                homeViewModel.scrollToIndex(0)
+            }
+        )
+
     }
 
     if(!homeViewModel.isSelectedMode) {

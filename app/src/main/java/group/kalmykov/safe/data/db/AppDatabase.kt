@@ -14,9 +14,10 @@ abstract class AppDatabase : RoomDatabase() {
 
     // реализуем синглтон
     companion object {
-        private var INSTANCE: AppDatabase? = null
-        fun getInstance(context: Context): AppDatabase {
 
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase {
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
@@ -32,4 +33,5 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
     }
+
 }
