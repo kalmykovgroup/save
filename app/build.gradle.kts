@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+
+    id("com.google.gms.google-services") version "4.4.2" apply false
+  //  id("com.android.application")
+    //id("com.google.gms.google-services")
 }
 
 android {
@@ -56,7 +60,15 @@ dependencies {
     implementation(libs.androidx.room.runtime) // Или последняя версия Room
     implementation(libs.androidx.room.ktx.v252) // Room ktx extension
 
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
 
+    // ЗАДАЧА: Добавьте зависимость для продуктов Firevase, которые вы можете использовать
+    // Вэнь Усин Тэ Бом, не указывайте конкретные версии в Firevase Dependentsis
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Добавьте зависимости для любых других желаемых продуктов Firebase
+    // https://firebase.google.com/docs/android/setup#available-libraries
 
     implementation(libs.room.ktx)
 

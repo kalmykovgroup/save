@@ -41,7 +41,7 @@ fun NavGraph(context: Context) {
 
     NavHost(
         navController = navController,
-        startDestination = if(navGraphViewModel.loginViewModel.isFirstLogin()) Destinations.FirstLogin.route else  Destinations.Home.route,
+        startDestination = if(navGraphViewModel.loginViewModel.isFirstLogin()) Destinations.FirstLogin.route else  Destinations.Login.route,
         modifier = Modifier,
 
         builder = {
