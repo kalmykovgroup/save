@@ -1,6 +1,8 @@
 package group.kalmykov.safe.viewModels
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -18,6 +20,8 @@ import group.kalmykov.safe.navigation.NavGraphViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.Console
+import javax.crypto.AEADBadTagException
 
 class LoginViewModel(private val context: Context, private val navGraphViewModel: NavGraphViewModel): ViewModel() {
 
@@ -31,17 +35,7 @@ class LoginViewModel(private val context: Context, private val navGraphViewModel
 
     var supportsBiometrics by  mutableStateOf(false)
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        passwordFileName,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    private val sharedPreferences = createEncryptedSharedPreferences(context)
 
     init{
         val biometricManager = BiometricManager.from(context)
@@ -53,6 +47,52 @@ class LoginViewModel(private val context: Context, private val navGraphViewModel
             }
         }
     }
+
+    private fun createEncryptedSharedPreferences(context: Context): SharedPreferences {
+        val passwordFileName = "encrypted_prefs"
+
+        try {
+            Log.d("EncryptedPrefs", "Попытка создания MasterKey и EncryptedSharedPreferences")
+
+            // Создаем MasterKey
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            Log.d("EncryptedPrefs", "MasterKey успешно создан")
+
+            // Создаем EncryptedSharedPreferences
+            return EncryptedSharedPreferences.create(
+                context,
+                passwordFileName,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: AEADBadTagException) {
+            Log.e("EncryptedPrefs", "Ошибка AEADBadTagException: ${e.message}, удаляю файл")
+
+            // Удаляем поврежденный файл
+            context.deleteFile(passwordFileName)
+
+            // Повторная попытка создания
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            Log.d("EncryptedPrefs", "MasterKey пересоздан")
+
+            return EncryptedSharedPreferences.create(
+                context,
+                passwordFileName,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            Log.e("EncryptedPrefs", "Неизвестная ошибка: ${e.message}", e)
+            throw RuntimeException("Ошибка при создании EncryptedSharedPreferences", e)
+        }
+    }
+
 
     fun isFirstLogin(): Boolean {//Проверяем что это не первый вход
         return sharedPreferences.getBoolean(isFirstLaunchFlagKey, true)
